@@ -1,82 +1,87 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Farplane.Common;
 using Farplane.Memory;
 using MahApps.Metro.Controls;
 
-namespace Farplane.FFX2.EditorPanels
+namespace Farplane.FFX2.EditorPanels;
+
+/// <summary>
+/// Interaction logic for CreatureEditor.xaml
+/// </summary>
+public partial class CreatureEditor : UserControl
 {
-    /// <summary>
-    /// Interaction logic for CreatureEditor.xaml
-    /// </summary>
-    public partial class CreatureEditor : UserControl
+    readonly int _creatureIndex = -1;
+    readonly int _statsOffset = 0;
+    readonly CreatureAbilities _creatureAbilities;
+    readonly StatsPanel _statsPanel;
+    bool _refreshing = false;
+
+    readonly int _offsetCreatureBase = (int)OffsetType.PartyStatBase;
+    readonly int _offsetCreatureName = (int)OffsetType.CreatureNames;
+
+    public CreatureEditor(int creatureIndex)
     {
-        private int _creatureIndex = -1;
-        private int _statsOffset = 0;
-        private CreatureAbilities _creatureAbilities;
-        private StatsPanel _statsPanel;
-        private bool _refreshing = false;
+        this._creatureIndex = creatureIndex;
+        this._statsOffset = this._offsetCreatureBase + ((creatureIndex + 15) * 0x80);
+        this.InitializeComponent();
 
-        private int _offsetCreatureBase = (int) OffsetType.PartyStatBase;
-        private int _offsetCreatureName = (int) OffsetType.CreatureNames;
+        this._creatureAbilities = new CreatureAbilities(creatureIndex);
+        this._statsPanel = new StatsPanel();
 
-        public CreatureEditor(int creatureIndex)
+        this.ccStats.Content = this._statsPanel;
+        this.TabAbilities.Content = this._creatureAbilities;
+        this.Refresh();
+
+        foreach (TabItem tabControl in this.CreatureTab.Items)
         {
-            _creatureIndex = creatureIndex;
-            _statsOffset = _offsetCreatureBase + (creatureIndex + 15)*0x80;
-            InitializeComponent();
+            ControlsHelper.SetHeaderFontSize(tabControl, 18);
+        }
+    }
 
-            _creatureAbilities = new CreatureAbilities(creatureIndex);
-            _statsPanel = new StatsPanel();
+    public void Refresh()
+    {
+        this._refreshing = true;
+        var nameBytes = LegacyMemoryReader.ReadBytes(
+            this._offsetCreatureName + (this._creatureIndex * 40),
+            18
+        );
+        var name = StringConverter.ToASCII(nameBytes);
+        this.CreatureName.Text = name;
+        this.CreatureSize.SelectedIndex =
+            GameMemory.Read<byte>(this._statsOffset + (int)Offsets.StatOffsets.Size) - 1;
+        this._statsPanel.Refresh(this._creatureIndex + 15);
+        this._creatureAbilities.Refresh();
+        this._refreshing = false;
+    }
 
-            ccStats.Content = _statsPanel;
-            TabAbilities.Content = _creatureAbilities;
-            Refresh();
-
-            foreach (TabItem tabControl in CreatureTab.Items)
-                ControlsHelper.SetHeaderFontSize(tabControl, 18);
+    void CreatureName_OnKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter)
+        {
+            return;
         }
 
-        public void Refresh()
+        var nameBytes = StringConverter.ToFFX(this.CreatureName.Text);
+        var writeBytes = new byte[18];
+        nameBytes.CopyTo(writeBytes, 0);
+        LegacyMemoryReader.WriteBytes(
+            this._offsetCreatureName + (this._creatureIndex * 40),
+            writeBytes
+        );
+        this.Refresh();
+    }
+
+    void CreatureSize_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (this._refreshing)
         {
-            _refreshing = true;
-            var nameBytes = LegacyMemoryReader.ReadBytes(_offsetCreatureName + (_creatureIndex*40), 18);
-            var name = StringConverter.ToASCII(nameBytes);
-            CreatureName.Text = name;
-            CreatureSize.SelectedIndex = GameMemory.Read<byte>(_statsOffset + (int) Offsets.StatOffsets.Size) - 1;
-            _statsPanel.Refresh(_creatureIndex + 15);
-            _creatureAbilities.Refresh();
-            _refreshing = false;
+            return;
         }
 
-        private void CreatureName_OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Key != Key.Enter) return;
-
-            var nameBytes = StringConverter.ToFFX(CreatureName.Text);
-            var writeBytes = new byte[18];
-            nameBytes.CopyTo(writeBytes, 0);
-            LegacyMemoryReader.WriteBytes(_offsetCreatureName + _creatureIndex*40, writeBytes);
-            Refresh();
-        }
-
-        private void CreatureSize_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (_refreshing) return;
-            LegacyMemoryReader.WriteBytes(_statsOffset + (int) Offsets.StatOffsets.Size,
-                new byte[] {(byte) (CreatureSize.SelectedIndex + 1)});
-        }
+        LegacyMemoryReader.WriteBytes(
+            this._statsOffset + (int)Offsets.StatOffsets.Size,
+            [(byte)(this.CreatureSize.SelectedIndex + 1)]
+        );
     }
 }

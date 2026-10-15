@@ -1,36 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace Farplane.FFX.EditorPanels.BlitzballPanel
+namespace Farplane.FFX.EditorPanels.BlitzballPanel;
+
+/// <summary>
+/// Interaction logic for BlitzballPanel.xaml
+/// </summary>
+public partial class BlitzballPanel : UserControl
 {
-    /// <summary>
-    /// Interaction logic for BlitzballPanel.xaml
-    /// </summary>
-    public partial class BlitzballPanel : UserControl
-    {
-        public BlitzballPanel()
-        {
-            InitializeComponent();
-        }
+    public BlitzballPanel() => this.InitializeComponent();
 
-        public void Refresh()
-        {
-            LeagueEditor.Refresh();
-            TournamentEditor.Refresh();
-            PlayerEditor.Refresh();
-            TeamEditor.Refresh();
-        }
+    public void Refresh()
+    {
+        this.LeagueEditor.Refresh();
+        this.TournamentEditor.Refresh();
+        this.PlayerEditor.Refresh();
+        this.TeamEditor.Refresh();
     }
 }

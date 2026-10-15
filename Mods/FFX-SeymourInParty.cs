@@ -2,8 +2,8 @@
 using System;
 using System.Linq;
 using System.Windows;
-using System.Windows.Media;
 using System.Windows.Controls;
+using System.Windows.Media;
 using Farplane;
 using Farplane.Common;
 using Farplane.FarplaneMod;
@@ -21,17 +21,35 @@ public class SeymourMod : IFarplaneMod
     private static int _offsetModBytes2 = 0x4A8F9A;
     private static int _offsetPartyList = Offsets.GetOffset(OffsetType.PartyList);
 
-    private static int offsetSeymourData = Offsets.GetOffset(OffsetType.PartyStatsBase) + 7 * StructHelper.GetSize<PartyMember>();
-    private static int offsetInParty = StructHelper.GetFieldOffset<PartyMember>("InParty");
+    private static int offsetSeymourData =
+        Offsets.GetOffset(OffsetType.PartyStatsBase) + 7 * StructHelper.GetSize<PartyMember>();
+    private static int offsetInParty = StructHelper.GetFieldOffset<PartyMember>(
+        nameof(PartyMember.InParty)
+    );
     private static int offsetSeymourInParty = offsetSeymourData + offsetInParty;
     private static int updateTicks = 0;
-    
+
     public void Configure(object parentWindow)
     {
-        var win = new MetroWindow() {Title="Configuration", Width=300, Height=100, WindowStartupLocation = WindowStartupLocation.CenterScreen, Owner=(Window)parentWindow, BorderThickness = new Thickness(0), GlowBrush=Brushes.Black, ResizeMode = ResizeMode.NoResize};
-        var check = new CheckBox() {Content="Add/remove Seymour automatically", Margin = new Thickness(5), IsChecked=ModSettings.ReadSetting<bool>("AutoAddRemove") };
-        var butt = new Button() {Content="Save", Margin = new Thickness(5) };
-        var stack = new StackPanel() {Children = { check, butt }, Margin= new Thickness(5) };
+        var win = new MetroWindow
+        {
+            Title = "Configuration",
+            Width = 300,
+            Height = 100,
+            WindowStartupLocation = WindowStartupLocation.CenterScreen,
+            Owner = (Window)parentWindow,
+            BorderThickness = new Thickness(0),
+            GlowBrush = Brushes.Black,
+            ResizeMode = ResizeMode.NoResize,
+        };
+        var check = new CheckBox
+        {
+            Content = "Add/remove Seymour automatically",
+            Margin = new Thickness(5),
+            IsChecked = ModSettings.ReadSetting<bool>("AutoAddRemove"),
+        };
+        var butt = new Button { Content = "Save", Margin = new Thickness(5) };
+        var stack = new StackPanel { Children = { check, butt }, Margin = new Thickness(5) };
         butt.Click += (sender, args) =>
         {
             ModSettings.WriteSetting("AutoAddRemove", check.IsChecked);
@@ -41,27 +59,27 @@ public class SeymourMod : IFarplaneMod
         win.ShowDialog();
     }
 
-    public string ConfigButton { get { return "Configure"; } }
-    public bool AutoActivate { get { return true; } }
-    private static byte[] _modBytes = GameMemory.Assembly.Generate(new[]
+    public string ConfigButton
     {
-        "nop",
-        "nop",
-        "nop",
-        "nop",
-    });
+        get { return "Configure"; }
+    }
+    public bool AutoActivate
+    {
+        get { return true; }
+    }
+    private static byte[] _modBytes = GameMemory.Assembly.Generate(
+        new[] { "nop", "nop", "nop", "nop" }
+    );
 
-    private static byte[] _originalBytes1 = GameMemory.Assembly.Generate(new[]
-    {
-        "cmp al,07",
-        "je 0x4A8F6F"
-    }, _offsetModBytes1);
+    private static byte[] _originalBytes1 = GameMemory.Assembly.Generate(
+        new[] { "cmp al,07", "je 0x4A8F6F" },
+        _offsetModBytes1
+    );
 
-    private static byte[] _originalBytes2 = GameMemory.Assembly.Generate(new[]
-    {
-        "cmp al,07",
-        "je 0x4A8FBC"
-    }, _offsetModBytes2);
+    private static byte[] _originalBytes2 = GameMemory.Assembly.Generate(
+        new[] { "cmp al,07", "je 0x4A8FBC" },
+        _offsetModBytes2
+    );
 
     public string Name
     {
@@ -85,7 +103,8 @@ public class SeymourMod : IFarplaneMod
 
     public ModState GetState()
     {
-        if (_modActive) return ModState.Activated;
+        if (_modActive)
+            return ModState.Activated;
         return ModState.Deactivated;
     }
 
@@ -94,17 +113,19 @@ public class SeymourMod : IFarplaneMod
         var codeBytes1 = GameMemory.Read<byte>(_offsetModBytes1, _originalBytes1.Length);
         var codeBytes2 = GameMemory.Read<byte>(_offsetModBytes2, _originalBytes2.Length);
 
-        if ((codeBytes1.SequenceEqual(_originalBytes1) &&
-            codeBytes2.SequenceEqual(_originalBytes2)) ||
-            (codeBytes1.SequenceEqual(_modBytes) &&
-            codeBytes2.SequenceEqual(_modBytes))) return true;
+        if (
+            (codeBytes1.SequenceEqual(_originalBytes1) && codeBytes2.SequenceEqual(_originalBytes2))
+            || (codeBytes1.SequenceEqual(_modBytes) && codeBytes2.SequenceEqual(_modBytes))
+        )
+            return true;
         ModLogger.WriteLine("Unexpected assembly code, aborting code write.");
         return false;
     }
-	
+
     public void Activate()
     {
-        if (_modActive) return;
+        if (_modActive)
+            return;
 
         _modActive = true;
 
@@ -123,7 +144,8 @@ public class SeymourMod : IFarplaneMod
 
     public void Deactivate()
     {
-        if (!_modActive) return;
+        if (!_modActive)
+            return;
 
         _modActive = false;
 

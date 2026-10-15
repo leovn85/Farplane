@@ -1,73 +1,83 @@
-﻿using System.Windows;
+using System.Windows;
 using System.Windows.Controls;
 using Farplane.Common;
 using Farplane.FFX.Data;
 
-namespace Farplane.FFX.EditorPanels.SphereGridPanel
+namespace Farplane.FFX.EditorPanels.SphereGridPanel;
+
+/// <summary>
+///     Interaction logic for SphereGridEditor.xaml
+/// </summary>
+public partial class SphereGridEditor : UserControl
 {
-    /// <summary>
-    ///     Interaction logic for SphereGridEditor.xaml
-    /// </summary>
-    public partial class SphereGridEditor : UserControl
+    bool _refreshing;
+    int _currentNode;
+
+    public SphereGridEditor()
     {
-        private bool _refreshing;
-        private int _currentNode;
+        this.InitializeComponent();
+        this.ComboNodeType.ItemsSource = SphereGrid.GetNames();
+    }
 
-        public SphereGridEditor()
+    public void Refresh()
+    {
+        this._refreshing = true;
+        this.RefreshNode();
+        this._refreshing = false;
+    }
+
+    void RefreshNode()
+    {
+        var node = SphereGrid.ReadNode(this._currentNode);
+
+        this.TextCurrentNode.Text = $"Currently editing node #{this._currentNode}";
+        this.ComboNodeType.SelectedIndex = node.NodeType;
+
+        var activations = BitHelper.GetBitArray([node.ActivatedBy], 8);
+        for (var i = 0; i < 7; i++)
         {
-            InitializeComponent();
-            ComboNodeType.ItemsSource = SphereGrid.GetNames();
-        }
-
-        public void Refresh()
-        {
-            _refreshing = true;
-            RefreshNode();
-            _refreshing = false;
-        }
-
-        private void RefreshNode()
-        {
-            var node = SphereGrid.ReadNode(_currentNode);
-
-            TextCurrentNode.Text = $"Currently editing node #{_currentNode}";
-            ComboNodeType.SelectedIndex = node.NodeType;
-
-            var activations = BitHelper.GetBitArray(new[] {node.ActivatedBy}, 8);
-            for (var i = 0; i < 7; i++)
+            if (this.PanelNodeActivatedBy.Children[i] is CheckBox checkBox)
             {
-                var checkBox = PanelNodeActivatedBy.Children[i] as CheckBox;
-                if (checkBox != null)
-                    checkBox.IsChecked = activations[i];
+                checkBox.IsChecked = activations[i];
             }
         }
+    }
 
-        private void ComboNodeType_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    void ComboNodeType_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (this._refreshing)
         {
-            if (_refreshing) return;
-
-            SphereGrid.SetNodeType(_currentNode, SphereGrid.NodeTypes[ComboNodeType.SelectedIndex].ID);
+            return;
         }
 
-        private void SphereGridActivation_Changed(object sender, RoutedEventArgs e)
-        {
-            if (_refreshing) return;
-            var senderBox = sender as CheckBox;
-            var senderIndex = PanelNodeActivatedBy.Children.IndexOf(senderBox);
+        SphereGrid.SetNodeType(
+            this._currentNode,
+            SphereGrid.NodeTypes[this.ComboNodeType.SelectedIndex].ID
+        );
+    }
 
-            var current = SphereGrid.ReadNode(_currentNode);
-            var actCurrent = current.ActivatedBy;
-            actCurrent = BitHelper.ToggleBit(actCurrent, senderIndex);
-            SphereGrid.SetNodeActivation(_currentNode, actCurrent);
-            Refresh();
+    void SphereGridActivation_Changed(object sender, RoutedEventArgs e)
+    {
+        if (this._refreshing)
+        {
+            return;
         }
 
-        private void ButtonSelectNode_Click(object sender, RoutedEventArgs e)
-        {
-            var selectedNode = SphereGrid.GetSelectedNode();
-            _currentNode = selectedNode;
+        var senderBox = sender as CheckBox;
+        var senderIndex = this.PanelNodeActivatedBy.Children.IndexOf(senderBox);
 
-            Refresh();
-        }
+        var current = SphereGrid.ReadNode(this._currentNode);
+        var actCurrent = current.ActivatedBy;
+        actCurrent = BitHelper.ToggleBit(actCurrent, senderIndex);
+        SphereGrid.SetNodeActivation(this._currentNode, actCurrent);
+        this.Refresh();
+    }
+
+    void ButtonSelectNode_Click(object sender, RoutedEventArgs e)
+    {
+        var selectedNode = SphereGrid.GetSelectedNode();
+        this._currentNode = selectedNode;
+
+        this.Refresh();
     }
 }

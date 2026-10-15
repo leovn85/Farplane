@@ -1,8 +1,7 @@
-﻿//css_reference "..\bin\Debug\farplane.exe";
+//css_reference "..\bin\Debug\farplane.exe";
 using System;
 using System.Linq;
 using System.Windows;
-
 using Farplane;
 using Farplane.Common;
 using Farplane.FarplaneMod;
@@ -15,62 +14,68 @@ public class FFXBreakDamageLimit : IFarplaneMod
 {
     private bool _modActive = false;
     private static int _offsetDamageLimit = 0x38ED3D;
-    public void Configure(object parentWindow)
-    {
+    private byte[] _originalBytes;
 
+    public void Configure(object parentWindow) { }
+    public string ConfigButton
+    {
+        get { return null; }
     }
-    public string ConfigButton { get { return null; } }
-    public bool AutoActivate { get { return true; } }
+    public bool AutoActivate
+    {
+        get { return true; }
+    }
     public string Name
     {
         get { return "Break Damage Limit"; }
     }
-
     public string Author
     {
         get { return "Topher"; }
     }
-
     public string Description
     {
         get { return "Remove the damage cap allowing damage to exceed 99999."; }
     }
-
     public GameType GameType
     {
         get { return GameType.FFX; }
     }
-
     public ModState GetState()
     {
-        if (_modActive) return ModState.Activated;
+        if (_modActive)
+            return ModState.Activated;
         return ModState.Deactivated;
     }
-
     public void Activate()
     {
-        if (_modActive) return;
+        if (_modActive)
+            return;
         ModLogger.WriteLine("Activating Break Damage Limit");
-        
-        var assembly = new []
+        var assembly = new[] { "nop", "nop", "nop", "nop", "mov ebx,0x7FFFFFFF" };
+        var modBytes = GameMemory.Assembly.Generate(assembly, _offsetDamageLimit);
+
+        // Lưu lại byte gốc trước khi tiêm mã máy
+        if (_originalBytes == null)
         {
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "mov ebx,0x7FFFFFFF"
-        };
+            _originalBytes = GameMemory.Read<byte>(_offsetDamageLimit, modBytes.Length);
+        }
 
-        GameMemory.Assembly.Inject(_offsetDamageLimit, assembly);
-
+        GameMemory.Write(_offsetDamageLimit, modBytes);
         _modActive = true;
     }
-
     public void Deactivate()
     {
-        if (!_modActive) return;
+        if (!_modActive)
+            return;
         ModLogger.WriteLine("Deactivating Break Damage Limit");
-        ModLogger.WriteLine("Deactivation NYI");
+
+        // Khôi phục lại mảng byte gốc
+        if (_originalBytes != null)
+        {
+            GameMemory.Write(_offsetDamageLimit, _originalBytes);
+        }
+
         _modActive = false;
     }
 

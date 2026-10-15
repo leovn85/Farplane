@@ -1,108 +1,108 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Farplane.FFX2.Values;
 
-namespace Farplane.FFX2.EditorPanels
+namespace Farplane.FFX2.EditorPanels;
+
+/// <summary>
+/// Interaction logic for GarmentGridEditor.xaml
+/// </summary>
+public partial class GarmentGridEditor : UserControl
 {
-    /// <summary>
-    /// Interaction logic for GarmentGridEditor.xaml
-    /// </summary>
-    public partial class GarmentGridEditor : UserControl
+    readonly int _offsetGarmentGrids = (int)OffsetType.KnownGarmentGrids;
+    bool _refreshing;
+
+    public GarmentGridEditor()
     {
-        private readonly int _offsetGarmentGrids = (int) OffsetType.KnownGarmentGrids;
-        private bool _refreshing;
-        public GarmentGridEditor()
+        this.InitializeComponent();
+        for (var i = 0; i < GarmentGrids.GarmentGridList.Length; i++)
         {
-            InitializeComponent();
-            for (int i = 0; i < GarmentGrids.GarmentGridList.Length; i++)
+            var gg = GarmentGrids.GarmentGridList[i];
+
+            var ggCheckBox = new CheckBox()
             {
-                var gg = GarmentGrids.GarmentGridList[i];
+                Name = "Grid" + gg.ID,
+                Content = gg.Name,
+                Margin = new Thickness(2),
+            };
+            ggCheckBox.Checked += this.GarmentGridChanged;
+            ggCheckBox.Unchecked += this.GarmentGridChanged;
 
-                var ggCheckBox = new CheckBox()
-                {
-                    Name = "Grid" + gg.ID,
-                    Content = gg.Name,
-                    Margin=new Thickness(2)
-                };
-                ggCheckBox.Checked += GarmentGridChanged;
-                ggCheckBox.Unchecked += GarmentGridChanged;
-
-                if(i < GarmentGrids.GarmentGridList.Length / 2)
-                    GarmentGridList.Children.Add(ggCheckBox);
-                else
-                    GarmentGridList2.Children.Add(ggCheckBox);
-                
-            }
-            Refresh();
-        }
-
-        private void GarmentGridChanged(object sender, RoutedEventArgs routedEventArgs)
-        {
-            if (_refreshing) return;
-
-            var checkBox = sender as CheckBox;
-            if (checkBox == null) return;
-
-            var gridIndex = int.Parse(checkBox.Name.Substring(4));
-
-            var byteIndex = gridIndex/8;
-            var bitIndex = gridIndex%8;
-
-            var garmentGridBytes = LegacyMemoryReader.ReadBytes(_offsetGarmentGrids, 8);
-            var gByte = garmentGridBytes[byteIndex];
-
-            var mask = (1 << bitIndex);
-            var newByte = gByte ^ (byte) mask;
-
-            LegacyMemoryReader.WriteBytes(_offsetGarmentGrids + byteIndex, new byte[] {(byte)newByte});
-            Refresh();
-        }
-
-
-
-        public void Refresh()
-        {
-            _refreshing = true;
-            var garmentGridBytes = LegacyMemoryReader.ReadBytes(_offsetGarmentGrids, 8);
-            var ggLen = GarmentGrids.GarmentGridList.Length;
-            for (int i = 0; i < GarmentGrids.GarmentGridList.Length; i++)
+            if (i < GarmentGrids.GarmentGridList.Length / 2)
             {
-                
-                CheckBox checkBox = null;
-                if(i < ggLen / 2)
-                    checkBox = (CheckBox) GarmentGridList.Children[i];
-                else
-                    checkBox = (CheckBox)GarmentGridList2.Children[i - ggLen/2];
-
-                if (checkBox == null) continue;
-                
-                var byteIndex = i/8;
-                var bitIndex = i%8;
-
-                byte mask = (byte)(1 << bitIndex);
-                bool isSet = (garmentGridBytes[byteIndex] & mask) != 0;
-
-                checkBox.IsChecked = isSet;
+                this.GarmentGridList.Children.Add(ggCheckBox);
             }
-            _refreshing = false;
+            else
+            {
+                this.GarmentGridList2.Children.Add(ggCheckBox);
+            }
+        }
+        this.Refresh();
+    }
+
+    void GarmentGridChanged(object sender, RoutedEventArgs routedEventArgs)
+    {
+        if (this._refreshing)
+        {
+            return;
         }
 
-        private void GiveAllGrids_Click(object sender, RoutedEventArgs e)
+        if (sender is not CheckBox checkBox)
         {
-            Cheats.GiveAllGrids();
-            Refresh();
+            return;
         }
+
+        var gridIndex = int.Parse(checkBox.Name.Substring(4));
+
+        var byteIndex = gridIndex / 8;
+        var bitIndex = gridIndex % 8;
+
+        var garmentGridBytes = LegacyMemoryReader.ReadBytes(this._offsetGarmentGrids, 8);
+        var gByte = garmentGridBytes[byteIndex];
+
+        var mask = 1 << bitIndex;
+        var newByte = gByte ^ (byte)mask;
+
+        LegacyMemoryReader.WriteBytes(this._offsetGarmentGrids + byteIndex, [(byte)newByte]);
+        this.Refresh();
+    }
+
+    public void Refresh()
+    {
+        this._refreshing = true;
+        var garmentGridBytes = LegacyMemoryReader.ReadBytes(this._offsetGarmentGrids, 8);
+        var ggLen = GarmentGrids.GarmentGridList.Length;
+        for (var i = 0; i < GarmentGrids.GarmentGridList.Length; i++)
+        {
+            CheckBox checkBox = null;
+            if (i < ggLen / 2)
+            {
+                checkBox = (CheckBox)this.GarmentGridList.Children[i];
+            }
+            else
+            {
+                checkBox = (CheckBox)this.GarmentGridList2.Children[i - (ggLen / 2)];
+            }
+
+            if (checkBox == null)
+            {
+                continue;
+            }
+
+            var byteIndex = i / 8;
+            var bitIndex = i % 8;
+
+            var mask = (byte)(1 << bitIndex);
+            var isSet = (garmentGridBytes[byteIndex] & mask) != 0;
+
+            checkBox.IsChecked = isSet;
+        }
+        this._refreshing = false;
+    }
+
+    void GiveAllGrids_Click(object sender, RoutedEventArgs e)
+    {
+        Cheats.GiveAllGrids();
+        this.Refresh();
     }
 }

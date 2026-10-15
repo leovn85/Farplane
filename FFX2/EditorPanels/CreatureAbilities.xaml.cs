@@ -1,216 +1,266 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Farplane.Common.Dialogs;
 using Farplane.FFX2.Values;
 using MahApps.Metro.Controls;
 
-namespace Farplane.FFX2.EditorPanels
+namespace Farplane.FFX2.EditorPanels;
+
+/// <summary>
+/// Interaction logic for CreatureAbilities.xaml
+/// </summary>
+public partial class CreatureAbilities : UserControl
 {
-    /// <summary>
-    /// Interaction logic for CreatureAbilities.xaml
-    /// </summary>
-    public partial class CreatureAbilities : UserControl
+    readonly int _abilityOffset = (int)OffsetType.CreatureAbilities;
+
+    readonly int _creatureIndex = 0;
+
+    public CreatureAbilities(int creatureIndex)
     {
-        private int _abilityOffset = (int) OffsetType.CreatureAbilities;
+        this._creatureIndex = creatureIndex;
 
-        private int _creatureIndex = 0;
+        this.InitializeComponent();
+        this.Refresh();
+    }
 
-        private Button _boxButton;
-        private int _boxIndex;
+    public void Refresh()
+    {
+        var creatureBytes = LegacyMemoryReader.ReadBytes(
+            this._abilityOffset + (this._creatureIndex * 0xE38),
+            0x16
+        );
 
-        public CreatureAbilities(int creatureIndex)
+        // Refresh commands
+        for (var commandSlot = 0; commandSlot < 8; commandSlot++)
         {
-            _creatureIndex = creatureIndex;
-
-            InitializeComponent();
-            Refresh();
-        }
-
-        public void Refresh()
-        {
-            var creatureBytes = LegacyMemoryReader.ReadBytes(_abilityOffset + (_creatureIndex * 0xE38), 0x16);
-
-            // Refresh commands
-            for (int commandSlot = 0; commandSlot < 8; commandSlot++)
+            var commandId = BitConverter.ToUInt16(creatureBytes, commandSlot * 2);
+            var commandButton = (Button)this.FindName("Command" + commandSlot);
+            if (commandButton == null)
             {
-                var commandId = BitConverter.ToUInt16(creatureBytes, commandSlot*2);
-                var commandButton = (Button)this.FindName("Command" + commandSlot);
-                if (commandButton == null) return;
+                return;
+            }
 
-                if (commandId == 0xFF || commandId == 0x0)
+            if (commandId is 0xFF or 0x0)
+            {
+                commandButton.Content = string.Empty;
+            }
+            else
+            {
+                var command = Commands.GetCommand(commandId);
+                if (command != null)
                 {
-                    commandButton.Content = string.Empty;
+                    this.SetCommandText(commandButton, command);
                 }
                 else
                 {
-                    var command = Commands.GetCommand(commandId);
-                    if (command != null)
-                    {
-                        SetCommandText(commandButton, command);
-                    }
-                    else
-                    {
-                        var auto = AutoAbilities.GetAutoAbility(commandId);
-                        SetAutoAbilityText(commandButton, auto);
-                    }
-                    
+                    var auto = AutoAbilities.GetAutoAbility(commandId);
+                    this.SetAutoAbilityText(commandButton, auto);
                 }
-                    
             }
         }
+    }
 
-        private void CommandButton_Click(object sender, RoutedEventArgs e)
+    void CommandButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.Refresh();
+        var senderButton = (Button)sender;
+        if (senderButton == null)
         {
-            Refresh();
-            var senderButton = (Button) sender;
-            if (senderButton == null) return;
+            return;
+        }
 
-            var commandIndex = int.Parse(senderButton.Name.Substring(7));
+        var commandIndex = int.Parse(senderButton.Name.Substring(7));
 
-                // ABILITY SEARCH
+        // ABILITY SEARCH
 
-            var searchList = BuildSearchList();
-            var textList = new List<string>();
-            foreach(var item in searchList)
-                textList.Add($"{item.ID.ToString("X4")} {item.Name}");
+        var searchList = this.BuildSearchList();
+        var textList = new List<string>();
+        foreach (var item in searchList)
+        {
+            textList.Add($"{item.ID:X4} {item.Name}");
+        }
 
-            
-            var currentCmd = ReadAbility(commandIndex);
-            var commandDialog = new SearchDialog(textList, currentCmd.ToString("X2")) {Owner=this.TryFindParent<Window>()};
+        var currentCmd = this.ReadAbility(commandIndex);
+        var commandDialog = new SearchDialog(textList, currentCmd.ToString("X2"))
+        {
+            Owner = this.TryFindParent<Window>(),
+        };
 
-            commandDialog.ShowDialog();
-            if (commandDialog.DialogResult.HasValue && commandDialog.DialogResult.Value == false) return;
+        commandDialog.ShowDialog();
+        if (commandDialog.DialogResult.HasValue && !commandDialog.DialogResult.Value)
+        {
+            return;
+        }
 
-            var searchIndex = commandDialog.ResultIndex;
+        var searchIndex = commandDialog.ResultIndex;
 
-            if (searchIndex == -1)
+        if (searchIndex == -1)
+        {
+            this.WriteAbility(commandIndex, 0xFF);
+        }
+        else
+        {
+            var searchCommand = searchList[searchIndex];
+            this.WriteAbility(commandIndex, searchCommand.ID);
+        }
+    }
+
+    void WriteAbility(int index, int abilityId)
+    {
+        LegacyMemoryReader.WriteBytes(
+            this._abilityOffset + (this._creatureIndex * 0xE38) + (index * 2),
+            BitConverter.GetBytes((ushort)abilityId)
+        );
+        this.Refresh();
+    }
+
+    ushort ReadAbility(int index)
+    {
+        var creatureBytes = LegacyMemoryReader.ReadBytes(
+            this._abilityOffset + (this._creatureIndex * 0xE38),
+            0x16
+        );
+        var abilityId = BitConverter.ToUInt16(creatureBytes, index * 2);
+        return abilityId;
+    }
+
+    void ShowButtonBox(Button button, string defaultText)
+    {
+        this.Refresh();
+
+        var inputBox = new TextBox
+        {
+            Text = defaultText,
+            SelectionStart = 0,
+            SelectionLength = defaultText.Length,
+            ContextMenu = null,
+        };
+        button.Content = inputBox;
+        button.UpdateLayout();
+        inputBox.Focus();
+        inputBox.KeyDown += (sender, args) =>
+        {
+            if (args.Key == Key.Escape)
             {
-                WriteAbility(commandIndex, 0xFF);
+                // Cancel input
+                this.Refresh();
+                return;
             }
-            else
+
+            if (args.Key != Key.Enter)
             {
-                var searchCommand = searchList[searchIndex];
-                WriteAbility(commandIndex, searchCommand.ID);
+                return;
             }
-            
-        }
 
-        private void WriteAbility(int index, int abilityId)
-        {
-            LegacyMemoryReader.WriteBytes(
-                _abilityOffset + (_creatureIndex * 0xE38) + (index * 2),
-                BitConverter.GetBytes((ushort)abilityId));
-            Refresh();
-        }
+            // Attempt to parse command ID and write ability
+            var commandIndex = int.Parse(button.Name.Substring(7));
+            var commandId = -1;
 
-        private ushort ReadAbility(int index)
-        {
-            var creatureBytes = LegacyMemoryReader.ReadBytes(_abilityOffset + (_creatureIndex * 0xE38), 0x16);
-            var abilityId = BitConverter.ToUInt16(creatureBytes, index*2);
-            return abilityId;
-        }
+            var foundId = int.TryParse(
+                inputBox.Text,
+                NumberStyles.HexNumber,
+                CultureInfo.InvariantCulture,
+                out commandId
+            );
 
-        private void ShowButtonBox(Button button, string defaultText)
-        {
-            Refresh();
-
-            var inputBox = new TextBox() {Text = defaultText, SelectionStart = 0, SelectionLength = defaultText.Length, ContextMenu = null};
-            button.Content = inputBox;
-            button.UpdateLayout();
-            inputBox.Focus();
-            inputBox.KeyDown += (sender, args) =>
+            if (!foundId)
             {
-                if (args.Key == Key.Escape)
+                return;
+            }
+
+            this.WriteAbility(commandIndex, commandId);
+        };
+    }
+
+    void SetAutoAbilityText(Button button, AutoAbility ability)
+    {
+        if (ability != null)
+        {
+            button.Content = $"[{ability.ID:X4}] {ability.Name}";
+        }
+        else
+        {
+            button.Content = $"Unknown ID";
+        }
+    }
+
+    void SetCommandText(Button button, Command command)
+    {
+        if (command != null)
+        {
+            button.Content = $"[{command.ID:X4}] {command.Name}";
+        }
+        else
+        {
+            button.Content = $"[{command.ID:X4}] ????";
+        }
+    }
+
+    List<AbilitySearchItem> BuildSearchList()
+    {
+        var searchList = new List<AbilitySearchItem>();
+
+        foreach (var command in Commands.CommandList)
+        {
+            searchList.Add(
+                new AbilitySearchItem
                 {
-                    // Cancel input
-                    Refresh();
-                    return;
+                    ID = command.ID,
+                    Name = command.Name,
+                    Type = AbilitySearchItem.AbilityType.Command,
                 }
-
-                if (args.Key != Key.Enter) return;
-
-                // Attempt to parse command ID and write ability
-                var commandIndex = int.Parse(button.Name.Substring(7));
-                var commandId = -1;
-
-                var foundId = int.TryParse(inputBox.Text, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out commandId);
-
-                if (!foundId) return;
-
-                WriteAbility(commandIndex, commandId);
-            };
+            );
         }
 
-        private void SetAutoAbilityText(Button button, AutoAbility ability)
+        foreach (var command in AutoAbilities.AutoAbilityList)
         {
-            if(ability != null)
-                button.Content = $"[{ability.ID.ToString("X4")}] {ability.Name}";
-            else
-                button.Content = $"Unknown ID";
+            searchList.Add(
+                new AbilitySearchItem
+                {
+                    ID = command.ID,
+                    Name = command.Name,
+                    Type = AbilitySearchItem.AbilityType.AutoAbility,
+                }
+            );
         }
 
-        private void SetCommandText(Button button, Command command)
+        return searchList;
+
+        //var searchList = new List<string>();
+        //foreach (var command in Commands.CommandList)
+        //    searchList.Add($"{command.ID.ToString("X2")} {command.Name}");
+        //foreach (var command in AutoAbilities.AutoAbilityList)
+        //    searchList.Add($"{command.ID.ToString("X2")} {command.Name}");
+    }
+
+    void CommandButton_RightMouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not Button senderButton)
         {
-            if (command != null)
-                button.Content = $"[{command.ID.ToString("X4")}] {command.Name}";
-            else
-                button.Content = $"[{command.ID.ToString("X4")}] ????";
-            
+            return;
         }
 
-        private List<AbilitySearchItem> BuildSearchList()
+        var buttonIndex = int.Parse(senderButton.Name.Substring(7));
+        var abilityId = LegacyMemoryReader.ReadInt16(
+            this._abilityOffset + (0xE38 * this._creatureIndex) + (2 * buttonIndex)
+        );
+        this.ShowButtonBox(senderButton, abilityId.ToString("X2"));
+    }
+
+    class AbilitySearchItem
+    {
+        public AbilityType Type { get; set; }
+        public int ID { get; set; }
+        public string Name { get; set; }
+
+        public enum AbilityType
         {
-            var searchList = new List<AbilitySearchItem>();
-
-            foreach (var command in Commands.CommandList)
-                searchList.Add(new AbilitySearchItem {ID = command.ID, Name = command.Name, Type=AbilitySearchItem.AbilityType.Command});
-            foreach (var command in AutoAbilities.AutoAbilityList)
-                searchList.Add(new AbilitySearchItem { ID = command.ID, Name = command.Name, Type = AbilitySearchItem.AbilityType.AutoAbility });
-
-            return searchList;
-
-            //var searchList = new List<string>();
-            //foreach (var command in Commands.CommandList)
-            //    searchList.Add($"{command.ID.ToString("X2")} {command.Name}");
-            //foreach (var command in AutoAbilities.AutoAbilityList)
-            //    searchList.Add($"{command.ID.ToString("X2")} {command.Name}");
-        }
-
-        private void CommandButton_RightMouseDown(object sender, MouseButtonEventArgs e)
-        {
-            var senderButton = sender as Button;
-            if (senderButton == null) return;
-
-            var buttonIndex = int.Parse(senderButton.Name.Substring(7));
-            var abilityId =
-                LegacyMemoryReader.ReadInt16(_abilityOffset + (0xE38*_creatureIndex) + (2*buttonIndex));
-            ShowButtonBox(senderButton, abilityId.ToString("X2"));
-        }
-
-        class AbilitySearchItem
-        {
-            public AbilityType Type { get; set; }
-            public int ID { get; set; }
-            public string Name { get; set; }
-
-            public enum AbilityType
-            {
-                Command,
-                AutoAbility
-            }
+            Command,
+            AutoAbility,
         }
     }
 }

@@ -1,63 +1,65 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Farplane.Common;
 using Farplane.Memory;
 
-namespace Farplane.FFX.Data
+namespace Farplane.FFX.Data;
+
+public static class Skills
 {
-    public static class Skills
+    static int _offsetSkillTable =>
+        GameMemory.Read<int>(OffsetScanner.GetOffset(GameOffset.FFX_SkillTablePointer), false);
+
+    static KernelTable _skillTable;
+
+    static void LoadTable()
     {
-        private static int _offsetSkillTable = 0;
-        private static KernelTable _skillTable;
-
-        private static void UpdateOffset()
+        var tableOffset = _offsetSkillTable;
+        if (tableOffset != 0)
         {
-            var skillTablePointer = OffsetScanner.GetOffset(GameOffset.FFX_SkillTablePointer);
-            _offsetSkillTable = GameMemory.Read<int>(skillTablePointer, false);
+            _skillTable = new KernelTable(tableOffset);
         }
+    }
 
-        private static void LoadTable()
+    public static List<string> GetSkillNames()
+    {
+        LoadTable();
+        var names = new List<string>();
+        if (_skillTable == null)
         {
-            _skillTable = new KernelTable(_offsetSkillTable);
-            //_skillTable = new KernelTable("D:\\Games\\Steam\\SteamApps\\common\\FINAL FANTASY FFX&FFX-2 HD Remaster\\data\\ffx_data_VBF\\ffx_ps2\\ffx\\master\\new_uspc\\battle\\kernel\\sphere.bin");
-        }
-
-        public static List<string> GetSkillNames()
-        {
-            if (_offsetSkillTable == 0) UpdateOffset();
-
-            LoadTable();
-
-            var names = new List<string>();
-            for (int i = 0; i < _skillTable.BlockCount; i++)
-            {
-                var skillName = _skillTable.GetString1(i);
-                names.Add(skillName);
-            }
-
             return names;
         }
 
-        public static string GetSkillName(int skillIndex)
+        for (var i = 0; i < _skillTable.BlockCount; i++)
         {
-            return _skillTable.GetString1(skillIndex);
+            var skillName = _skillTable.GetString1(i);
+            names.Add(skillName);
         }
-        public static string GetSkillDescription(int skillIndex)
-        {
-            return _skillTable.GetString2(skillIndex);
-        }
+        return names;
     }
 
-    public struct SkillData
+    public static string GetSkillName(int skillIndex)
     {
-        public ushort unknown_1;
-        public ushort unknown_2;
-        public ushort unknown_3;
-        public ushort Animation1;
-        public ushort Animation2;
+        if (_skillTable == null)
+        {
+            LoadTable();
+        }
+        return _skillTable?.GetString1(skillIndex) ?? string.Empty;
     }
+
+    public static string GetSkillDescription(int skillIndex)
+    {
+        if (_skillTable == null)
+        {
+            LoadTable();
+        }
+        return _skillTable?.GetString2(skillIndex) ?? string.Empty;
+    }
+}
+
+public struct SkillData
+{
+    public ushort unknown_1;
+    public ushort unknown_2;
+    public ushort unknown_3;
+    public ushort Animation1;
+    public ushort Animation2;
 }

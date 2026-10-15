@@ -1,13 +1,15 @@
-﻿<UserControl x:Class="Farplane.FFX.EditorPanels.BlitzballPanel.BlitzballTeamEditor"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:Farplane.FFX.EditorPanels.BlitzballPanel"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             d:DesignHeight="480"
-             d:DesignWidth="480"
-             mc:Ignorable="d">
+﻿<UserControl
+    x:Class="Farplane.FFX.EditorPanels.BlitzballPanel.BlitzballTeamEditor"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:Controls="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Farplane.FFX.EditorPanels.BlitzballPanel"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="480"
+    d:DesignWidth="480"
+    mc:Ignorable="d"
+>
     <StackPanel>
         <TabControl Name="TabTeam" SelectionChanged="TabTeam_OnSelectionChanged" />
         <Grid>
@@ -19,10 +21,12 @@
                 <StackPanel>
                     <DockPanel Margin="2">
                         <TextBlock VerticalAlignment="Center" Text="Roster Size" />
-                        <ComboBox Name="ComboRosterSize"
-                                  Width="60"
-                                  HorizontalAlignment="Right"
-                                  SelectionChanged="RosterSize_Changed">
+                        <ComboBox
+                            Name="ComboRosterSize"
+                            Width="60"
+                            HorizontalAlignment="Right"
+                            SelectionChanged="RosterSize_Changed"
+                        >
                             <ComboBoxItem Content="6" />
                             <ComboBoxItem Content="7" />
                             <ComboBoxItem Content="8" />
@@ -45,97 +49,129 @@
                             <ColumnDefinition />
                             <ColumnDefinition Width="40" />
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Row="0"
-                                   Grid.ColumnSpan="2"
-                                   Margin="2"
-                                   HorizontalAlignment="Right"
-                                   Text="Contract Length" />
-                        <Button Name="ButtonPlayer1"
-                                Grid.Row="1"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer1"
-                                 Grid.Row="1"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer2"
-                                Grid.Row="2"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer2"
-                                 Grid.Row="2"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer3"
-                                Grid.Row="3"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer3"
-                                 Grid.Row="3"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer4"
-                                Grid.Row="4"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer4"
-                                 Grid.Row="4"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer5"
-                                Grid.Row="5"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer5"
-                                 Grid.Row="5"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer6"
-                                Grid.Row="6"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer6"
-                                 Grid.Row="6"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer7"
-                                Grid.Row="7"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer7"
-                                 Grid.Row="7"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
-                        <Button Name="ButtonPlayer8"
-                                Grid.Row="8"
-                                Grid.Column="0"
-                                Margin="2"
-                                Click="ButtonPlayer_OnClick" />
-                        <TextBox Name="TextPlayer8"
-                                 Grid.Row="8"
-                                 Grid.Column="1"
-                                 Margin="2"
-                                 KeyDown="TextPlayer_KeyDown" />
+                        <TextBlock
+                            Grid.Row="0"
+                            Grid.ColumnSpan="2"
+                            Margin="2"
+                            HorizontalAlignment="Right"
+                            Text="Contract Length"
+                        />
+                        <Button
+                            Name="ButtonPlayer1"
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer1"
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer2"
+                            Grid.Row="2"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer2"
+                            Grid.Row="2"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer3"
+                            Grid.Row="3"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer3"
+                            Grid.Row="3"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer4"
+                            Grid.Row="4"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer4"
+                            Grid.Row="4"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer5"
+                            Grid.Row="5"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer5"
+                            Grid.Row="5"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer6"
+                            Grid.Row="6"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer6"
+                            Grid.Row="6"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer7"
+                            Grid.Row="7"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer7"
+                            Grid.Row="7"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
+                        <Button
+                            Name="ButtonPlayer8"
+                            Grid.Row="8"
+                            Grid.Column="0"
+                            Margin="2"
+                            Click="ButtonPlayer_OnClick"
+                        />
+                        <TextBox
+                            Name="TextPlayer8"
+                            Grid.Row="8"
+                            Grid.Column="1"
+                            Margin="2"
+                            KeyDown="TextPlayer_KeyDown"
+                        />
                     </Grid>
                 </StackPanel>
             </GroupBox>
             <GroupBox Grid.Column="1" Header="Misc" />
         </Grid>
-
     </StackPanel>
-
 </UserControl>

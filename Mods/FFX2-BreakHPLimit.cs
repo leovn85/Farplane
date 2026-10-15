@@ -2,7 +2,6 @@
 using System;
 using System.Linq;
 using System.Windows;
-
 using Farplane;
 using Farplane.Common;
 using Farplane.FarplaneMod;
@@ -18,12 +17,17 @@ public class FFX2BreakHPLimit : IFarplaneMod
     private static int _offsetMPLimit = 0x20E774;
     private static int _offsetHPCheck = 0x2365DE;
     private static int _offsetMPCheck = 0x23662D;
-    public void Configure(object parentWindow)
-    {
 
+    public void Configure(object parentWindow) { }
+
+    public string ConfigButton
+    {
+        get { return null; }
     }
-    public string ConfigButton { get { return null; } }
-    public bool AutoActivate { get { return true; } }
+    public bool AutoActivate
+    {
+        get { return true; }
+    }
     public string Name
     {
         get { return "Break HP Limit"; }
@@ -46,86 +50,63 @@ public class FFX2BreakHPLimit : IFarplaneMod
 
     public ModState GetState()
     {
-        if (_modActive) return ModState.Activated;
+        if (_modActive)
+            return ModState.Activated;
         return ModState.Deactivated;
     }
 
     public void Activate()
     {
-        if (_modActive) return;
+        if (_modActive)
+            return;
         ModLogger.WriteLine("Activating Break HP/MP Limit");
 
         // No check (yet)
-        GameMemory.Assembly.Inject(_offsetHPCheck, new []
-        {
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "mov eax,0x7fffffff",
-        });
-        GameMemory.Assembly.Inject(_offsetMPCheck, new[]
-        {
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "mov eax,0x7fffffff",
-        });
-        GameMemory.Assembly.Inject(_offsetMPLimit, new[]
-        {
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "mov eax,0x7fffffff",
-        });
-        GameMemory.Assembly.Inject(_offsetHPLimit, new[]
-        {
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "nop",
-            "mov eax,0x7fffffff",
-        });
+        GameMemory.Assembly.Inject(
+            _offsetHPCheck,
+            new[] { "nop", "nop", "nop", "nop", "nop", "mov eax,0x7fffffff" }
+        );
+        GameMemory.Assembly.Inject(
+            _offsetMPCheck,
+            new[] { "nop", "nop", "nop", "nop", "nop", "mov eax,0x7fffffff" }
+        );
+        GameMemory.Assembly.Inject(
+            _offsetMPLimit,
+            new[] { "nop", "nop", "nop", "nop", "nop", "nop", "nop", "mov eax,0x7fffffff" }
+        );
+        GameMemory.Assembly.Inject(
+            _offsetHPLimit,
+            new[] { "nop", "nop", "nop", "nop", "nop", "nop", "nop", "mov eax,0x7fffffff" }
+        );
 
         _modActive = true;
     }
 
     public void Deactivate()
     {
-        if (!_modActive) return;
+        if (!_modActive)
+            return;
         ModLogger.WriteLine("Deactivating Break HP/MP Limit");
-        GameMemory.Assembly.Inject(_offsetHPCheck, new[]
-        {
-            "and eax,0x00015f90",
-            "add eax,0x0000270f",
-        }, true);
-        GameMemory.Assembly.Inject(_offsetMPCheck, new[]
-        {
-            "and eax,0x00002328",
-            "add eax,0x000003E7",
-        }, true);
-        GameMemory.Assembly.Inject(_offsetMPLimit, new[]
-        {
-            "mov eax,0x0000270F",
-            "jne 0x20E780",
-            "mov eax,0x000003E7",
-        }, true);
-        GameMemory.Assembly.Inject(_offsetHPLimit, new[]
-        {
-            "mov eax,0x0001869F",
-            "jne 0x20E749",
-            "mov eax,0x0000270F",
-        }, true);
+        GameMemory.Assembly.Inject(
+            _offsetHPCheck,
+            new[] { "and eax,0x00015f90", "add eax,0x0000270f" },
+            true
+        );
+        GameMemory.Assembly.Inject(
+            _offsetMPCheck,
+            new[] { "and eax,0x00002328", "add eax,0x000003E7" },
+            true
+        );
+        GameMemory.Assembly.Inject(
+            _offsetMPLimit,
+            new[] { "mov eax,0x0000270F", "jne 0x20E780", "mov eax,0x000003E7" },
+            true
+        );
+        GameMemory.Assembly.Inject(
+            _offsetHPLimit,
+            new[] { "mov eax,0x0001869F", "jne 0x20E749", "mov eax,0x0000270F" },
+            true
+        );
         _modActive = false;
     }
 

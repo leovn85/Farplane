@@ -1,150 +1,154 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Farplane.FFX2.EditorPanels;
 using Farplane.FFX2.EditorPanels.Party;
 using Farplane.Memory;
 using MahApps.Metro.Controls;
 using Image = System.Windows.Controls.Image;
 
-namespace Farplane.FFX2
+namespace Farplane.FFX2;
+
+/// <summary>
+/// Interaction logic for FFX2Editor.xaml
+/// </summary>
+public partial class FFX2Editor : MetroWindow
 {
-    /// <summary>
-    /// Interaction logic for FFX2Editor.xaml
-    /// </summary>
-    public partial class FFX2Editor : MetroWindow
+    readonly General _generalPanel = new();
+    readonly PartyPanel _partyPanel = new();
+    readonly CreaturePanel _creaturePanel = new();
+    readonly CreatureTrapping _trappingPanel = new();
+    readonly ItemsEditor _itemsPanel = new();
+    readonly DressphereEditor _dresspheresPanel = new();
+    readonly AccessoriesEditor _accessoriesPanel = new();
+    readonly GarmentGridEditor _garmentGridsPanel = new();
+    readonly DebugOptions _debugOptionsPanel = new();
+    readonly int _defaultHeight = 540;
+    readonly int _defaultWidth = 640;
+    bool _rolledUp = false;
+    bool _windowPinned = false;
+    readonly BitmapImage _iconShrink = new(
+        new Uri("pack://application:,,,/Resources/Images/shrink.png")
+    );
+    readonly BitmapImage _iconExpand = new(
+        new Uri("pack://application:,,,/Resources/Images/expand.png")
+    );
+
+    public FFX2Editor()
     {
-        private General _generalPanel = new General();
-        private PartyPanel _partyPanel = new PartyPanel();
-        private CreaturePanel _creaturePanel = new CreaturePanel();
-        private CreatureTrapping _trappingPanel = new CreatureTrapping();
-        private ItemsEditor _itemsPanel = new ItemsEditor();
-        private DressphereEditor _dresspheresPanel = new DressphereEditor();
-        private AccessoriesEditor _accessoriesPanel = new AccessoriesEditor();
-        private GarmentGridEditor _garmentGridsPanel = new GarmentGridEditor();
-        private DebugOptions _debugOptionsPanel = new DebugOptions();
+        this.InitializeComponent();
+        GameMemory.ProcessExited += this.Close;
+    }
 
-        private int _defaultHeight = 540;
-        private int _defaultWidth = 640;
-        private bool _rolledUp = false;
-        private bool _windowPinned = false;
-        private BitmapImage _iconShrink = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/shrink.png"));
-        private BitmapImage _iconExpand = new BitmapImage(new Uri("pack://application:,,,/Resources/Images/expand.png"));
+    protected override void OnClosed(EventArgs e)
+    {
+        // Gỡ bỏ sự kiện tĩnh để tránh giữ tham chiếu Window và gây rò rỉ bộ nhớ
+        GameMemory.ProcessExited -= this.Close;
+        base.OnClosed(e);
+    }
 
-        public FFX2Editor()
+    void TreeView_SelectionChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+    {
+        var item = (TreeViewItem)e.NewValue;
+        if (item == null)
         {
-            InitializeComponent();
-            GameMemory.ProcessExited += Close;
+            return;
         }
 
-        private void TreeView_SelectionChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        switch (item.Name)
         {
-            var item = (TreeViewItem) e.NewValue;
-            switch ((string)item.Name)
+            case "GeneralPanel":
+                this._generalPanel.Refresh();
+                this.EditorPanel.Content = this._generalPanel;
+                break;
+            case "PartyPanel":
+                this._partyPanel.Refresh();
+                this.EditorPanel.Content = this._partyPanel;
+                break;
+            case "CreaturePanel":
+                this._creaturePanel.Refresh();
+                this.EditorPanel.Content = this._creaturePanel;
+                break;
+            case "TrappingPanel":
+                this._trappingPanel.Refresh();
+                this.EditorPanel.Content = this._trappingPanel;
+                break;
+            case "ItemsPanel":
+                this._itemsPanel.Refresh();
+                this.EditorPanel.Content = this._itemsPanel;
+                break;
+            case "AccessoriesPanel":
+                this._accessoriesPanel.Refresh();
+                this.EditorPanel.Content = this._accessoriesPanel;
+                break;
+            case "DresspheresPanel":
+                this._dresspheresPanel.Refresh();
+                this.EditorPanel.Content = this._dresspheresPanel;
+                break;
+            case "GarmentGridsPanel":
+                this._garmentGridsPanel.Refresh();
+                this.EditorPanel.Content = this._garmentGridsPanel;
+                break;
+            case "DebugOptionsPanel":
+                this._debugOptionsPanel.Refresh();
+                this.EditorPanel.Content = this._debugOptionsPanel;
+                break;
+            default:
+                break;
+        }
+    }
+
+    void RefreshAll()
+    {
+        this._generalPanel.Refresh();
+        this._partyPanel.Refresh();
+        this._creaturePanel.Refresh();
+        this._trappingPanel.Refresh();
+        this._itemsPanel.Refresh();
+        this._accessoriesPanel.Refresh();
+        this._dresspheresPanel.Refresh();
+        this._debugOptionsPanel.Refresh();
+        this._garmentGridsPanel.Refresh();
+    }
+
+    void RefreshAll_Click(object sender, RoutedEventArgs e) => this.RefreshAll();
+
+    void ButtonPin_Click(object sender, RoutedEventArgs e)
+    {
+        this._windowPinned = !this._windowPinned;
+        this.ButtonPin.IsChecked = this._windowPinned;
+        this.Topmost = this._windowPinned;
+    }
+
+    void ButtonRollUp_Click(object sender, RoutedEventArgs e)
+    {
+        if (this._rolledUp)
+        {
+            this.Left -= this._defaultWidth - 210;
+            this.GridContent.Visibility = Visibility.Visible;
+            this.Width = this._defaultWidth;
+            this.Height = this._defaultHeight;
+            this.ButtonRollUp.Content = new Image
             {
-                case "GeneralPanel":
-                    _generalPanel.Refresh();
-                    EditorPanel.Content = _generalPanel;
-                    break;
-                case "PartyPanel":
-                    _partyPanel.Refresh();
-                    EditorPanel.Content = _partyPanel;
-                    break;
-                case "CreaturePanel":
-                    _creaturePanel.Refresh();
-                    EditorPanel.Content = _creaturePanel;
-                    break;
-                case "TrappingPanel":
-                    _trappingPanel.Refresh();
-                    EditorPanel.Content = _trappingPanel;
-                    break;
-                case "ItemsPanel":
-                    _itemsPanel.Refresh();
-                    EditorPanel.Content = _itemsPanel;
-                    break;
-                case "AccessoriesPanel":
-                    _accessoriesPanel.Refresh();
-                    EditorPanel.Content = _accessoriesPanel;
-                    break;
-                case "DresspheresPanel":
-                    _dresspheresPanel.Refresh();
-                    EditorPanel.Content = _dresspheresPanel;
-                    break;
-                case "GarmentGridsPanel":
-                    _garmentGridsPanel.Refresh();
-                    EditorPanel.Content = _garmentGridsPanel;
-                    break;
-                case "DebugOptionsPanel":
-                    _debugOptionsPanel.Refresh();
-                    EditorPanel.Content = _debugOptionsPanel;
-                    break;
-                default:
-                    break;
-            }
+                Source = this._iconShrink,
+                Width = 16,
+                Height = 16,
+            };
         }
-
-        private void RefreshAll()
+        else
         {
-            _generalPanel.Refresh();
-            _partyPanel.Refresh();
-            _creaturePanel.Refresh();
-            _trappingPanel.Refresh();
-            _itemsPanel.Refresh();
-            _accessoriesPanel.Refresh();
-            _dresspheresPanel.Refresh();
-            _debugOptionsPanel.Refresh();
-        }
-
-        private void RefreshAll_Click(object sender, RoutedEventArgs e)
-        {
-            RefreshAll();
-        }
-
-        private void ButtonPin_Click(object sender, RoutedEventArgs e)
-        {
-            _windowPinned = !_windowPinned;
-            ButtonPin.IsChecked = _windowPinned;
-
-            this.Topmost = _windowPinned;
-        }
-
-        private void ButtonRollUp_Click(object sender, RoutedEventArgs e)
-        {
-            if (_rolledUp)
+            this.Width = 210;
+            this.Left += this._defaultWidth - this.Width;
+            this.Height = 30;
+            this.GridContent.Visibility = Visibility.Hidden;
+            this.ButtonRollUp.Content = new Image
             {
-                Left -= _defaultWidth - 210;
-
-                GridContent.Visibility = Visibility.Visible;
-
-                Width = _defaultWidth;
-                Height = _defaultHeight;
-
-                ButtonRollUp.Content = new Image() {Source = _iconShrink, Width = 16, Height = 16 };
-            }
-            else
-            {
-                Width = 210;
-                Left += _defaultWidth - Width;
-
-                Height = 30;
-                GridContent.Visibility = Visibility.Hidden;
-                ButtonRollUp.Content = new Image() { Source = _iconExpand, Width=16, Height=16 };
-            }
-            _rolledUp = !_rolledUp;
-
+                Source = this._iconExpand,
+                Width = 16,
+                Height = 16,
+            };
         }
+        this._rolledUp = !this._rolledUp;
     }
 }

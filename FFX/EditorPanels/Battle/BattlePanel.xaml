@@ -1,32 +1,41 @@
-﻿<UserControl x:Class="Farplane.FFX.EditorPanels.Battle.BattlePanel"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:local="clr-namespace:Farplane.FFX.EditorPanels.Battle"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             d:DesignHeight="500"
-             d:DesignWidth="500"
-             mc:Ignorable="d">
+﻿<UserControl
+    x:Class="Farplane.FFX.EditorPanels.Battle.BattlePanel"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:Farplane.FFX.EditorPanels.Battle"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    d:DesignHeight="500"
+    d:DesignWidth="500"
+    mc:Ignorable="d"
+>
     <GroupBox Header="Battle">
         <Grid>
-            <TextBlock Name="TextEnterBattle"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Visibility="Collapsed">
+            <TextBlock
+                Name="TextEnterBattle"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Visibility="Collapsed"
+            >
                 To use the Battle editor, please enter battle then click Refresh
-            </TextBlock>
+            </TextBlock
+            >
             <StackPanel Name="StackBattle">
-                <TabControl Name="TabBattle"
-                            Height="20"
-                            SelectedIndex="0"
-                            SelectionChanged="TabBattle_OnSelectionChanged">
+                <TabControl
+                    Name="TabBattle"
+                    Height="20"
+                    SelectedIndex="0"
+                    SelectionChanged="TabBattle_OnSelectionChanged"
+                >
                     <TabItem Header="Party" />
                     <TabItem Header="Enemies" />
                 </TabControl>
-                <TabControl Name="TabEntity"
-                            Height="60"
-                            SelectedIndex="0"
-                            SelectionChanged="TabEntity_OnSelectionChanged">
+                <TabControl
+                    Name="TabEntity"
+                    Height="60"
+                    SelectedIndex="0"
+                    SelectionChanged="TabEntity_OnSelectionChanged"
+                >
                     <TabItem Header="Entity 1" />
                     <TabItem Header="Entity 1" />
                     <TabItem Header="Entity 1" />
@@ -46,9 +55,11 @@
                     <TabItem Header="Entity 1" />
                     <TabItem Header="Entity 1" />
                 </TabControl>
-                <TabControl Name="TabEditor"
-                            SelectedIndex="0"
-                            SelectionChanged="TabEntity_OnSelectionChanged">
+                <TabControl
+                    Name="TabEditor"
+                    SelectedIndex="0"
+                    SelectionChanged="TabEntity_OnSelectionChanged"
+                >
                     <TabItem Header="Stats">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -59,51 +70,63 @@
                                 <StackPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Current HP" />
-                                        <TextBox Name="TextCurrentHP"
-                                                 Width="80"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextCurrentHP"
+                                            Width="80"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Current MP" />
-                                        <TextBox Name="TextCurrentMP"
-                                                 Width="70"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextCurrentMP"
+                                            Width="70"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Max HP" />
-                                        <TextBox Name="TextMaxHP"
-                                                 Width="80"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextMaxHP"
+                                            Width="80"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Max MP" />
-                                        <TextBox Name="TextMaxMP"
-                                                 Width="70"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextMaxMP"
+                                            Width="70"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Overdrive" />
-                                        <TextBox Name="TextOverdrive"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextOverdrive"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Overdrive" />
-                                        <TextBox Name="TextOverdriveMax"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextOverdriveMax"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                 </StackPanel>
                             </GroupBox>
@@ -111,83 +134,101 @@
                                 <StackPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Strength" />
-                                        <TextBox Name="TextStrength"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextStrength"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Defense" />
-                                        <TextBox Name="TextDefense"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextDefense"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Magic" />
-                                        <TextBox Name="TextMagic"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextMagic"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Magic Defense" />
-                                        <TextBox Name="TextMagicDefense"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextMagicDefense"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Agility" />
-                                        <TextBox Name="TextAgility"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextAgility"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Luck" />
-                                        <TextBox Name="TextLuck"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextLuck"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Evasion" />
-                                        <TextBox Name="TextEvasion"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextEvasion"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                     <DockPanel Margin="2">
                                         <TextBlock Margin="5" Text="Accuracy" />
-                                        <TextBox Name="TextAccuracy"
-                                                 Width="50"
-                                                 HorizontalAlignment="Right"
-                                                 KeyDown="TextBoxStat_KeyDown"
-                                                 TextAlignment="Right" />
+                                        <TextBox
+                                            Name="TextAccuracy"
+                                            Width="50"
+                                            HorizontalAlignment="Right"
+                                            KeyDown="TextBoxStat_KeyDown"
+                                            TextAlignment="Right"
+                                        />
                                     </DockPanel>
                                 </StackPanel>
                             </GroupBox>
                         </Grid>
-
                     </TabItem>
                     <TabItem Header="Status">
                         <StackPanel>
-                            <TextBlock Grid.Row="0"
-                                       Grid.Column="0"
-                                       Grid.ColumnSpan="2"
-                                       VerticalAlignment="Center"
-                                       TextAlignment="Center"
-                                       TextWrapping="Wrap">
+                            <TextBlock
+                                Grid.Row="0"
+                                Grid.Column="0"
+                                Grid.ColumnSpan="2"
+                                VerticalAlignment="Center"
+                                TextAlignment="Center"
+                                TextWrapping="Wrap"
+                            >
                                 Most effects update immediately, some will only update when the character has a turn and some effect icons may not appear/disappear
-                            </TextBlock>
+                            </TextBlock
+                            >
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition />
@@ -203,151 +244,201 @@
                                             <RowDefinition />
                                             <RowDefinition />
                                         </Grid.RowDefinitions>
-                                        <StackPanel Grid.Row="0"
-                                                    Grid.Column="0"
-                                                    Grid.ColumnSpan="2">
+                                        <StackPanel
+                                            Grid.Row="0"
+                                            Grid.Column="0"
+                                            Grid.ColumnSpan="2"
+                                        >
                                             <DockPanel>
-                                                <CheckBox Name="CheckSleep"
-                                                          Margin="2"
-                                                          Checked="CheckSleep_OnChecked"
-                                                          Content="Sleep"
-                                                          Unchecked="CheckSleep_OnChecked" />
+                                                <CheckBox
+                                                    Name="CheckSleep"
+                                                    Margin="2"
+                                                    Checked="CheckSleep_OnChecked"
+                                                    Content="Sleep"
+                                                    Unchecked="CheckSleep_OnChecked"
+                                                />
                                                 <DockPanel HorizontalAlignment="Right">
                                                     <TextBlock Margin="5" Text="Turns Left" />
-                                                    <TextBox Name="TextSleep"
-                                                             Width="40"
-                                                             HorizontalAlignment="Right"
-                                                             KeyDown="TextBoxStat_KeyDown" />
+                                                    <TextBox
+                                                        Name="TextSleep"
+                                                        Width="40"
+                                                        HorizontalAlignment="Right"
+                                                        KeyDown="TextBoxStat_KeyDown"
+                                                    />
                                                 </DockPanel>
                                             </DockPanel>
                                             <DockPanel>
-                                                <CheckBox Name="CheckSilence"
-                                                          Margin="2"
-                                                          Checked="CheckSilence_OnChecked"
-                                                          Content="Silence"
-                                                          Unchecked="CheckSilence_OnChecked" />
+                                                <CheckBox
+                                                    Name="CheckSilence"
+                                                    Margin="2"
+                                                    Checked="CheckSilence_OnChecked"
+                                                    Content="Silence"
+                                                    Unchecked="CheckSilence_OnChecked"
+                                                />
                                                 <DockPanel HorizontalAlignment="Right">
                                                     <TextBlock Margin="5" Text="Turns Left" />
-                                                    <TextBox Name="TextSilence"
-                                                             Width="40"
-                                                             HorizontalAlignment="Right"
-                                                             KeyDown="TextBoxStat_KeyDown" />
+                                                    <TextBox
+                                                        Name="TextSilence"
+                                                        Width="40"
+                                                        HorizontalAlignment="Right"
+                                                        KeyDown="TextBoxStat_KeyDown"
+                                                    />
                                                 </DockPanel>
                                             </DockPanel>
                                             <DockPanel>
-                                                <CheckBox Name="CheckDarkness"
-                                                          Margin="2"
-                                                          Checked="CheckDarkness_OnChecked"
-                                                          Content="Darkness"
-                                                          Unchecked="CheckDarkness_OnChecked" />
+                                                <CheckBox
+                                                    Name="CheckDarkness"
+                                                    Margin="2"
+                                                    Checked="CheckDarkness_OnChecked"
+                                                    Content="Darkness"
+                                                    Unchecked="CheckDarkness_OnChecked"
+                                                />
                                                 <DockPanel HorizontalAlignment="Right">
                                                     <TextBlock Margin="5" Text="Turns Left" />
-                                                    <TextBox Name="TextDarkness"
-                                                             Width="40"
-                                                             HorizontalAlignment="Right"
-                                                             KeyDown="TextBoxStat_KeyDown" />
+                                                    <TextBox
+                                                        Name="TextDarkness"
+                                                        Width="40"
+                                                        HorizontalAlignment="Right"
+                                                        KeyDown="TextBoxStat_KeyDown"
+                                                    />
                                                 </DockPanel>
                                             </DockPanel>
                                             <DockPanel>
-                                                <CheckBox Name="CheckPositiveFlag15"
-                                                          Margin="2"
-                                                          Checked="CheckPositiveFlag_OnChecked"
-                                                          Content="Doom"
-                                                          Unchecked="CheckPositiveFlag_OnChecked" />
+                                                <CheckBox
+                                                    Name="CheckPositiveFlag15"
+                                                    Margin="2"
+                                                    Checked="CheckPositiveFlag_OnChecked"
+                                                    Content="Doom"
+                                                    Unchecked="CheckPositiveFlag_OnChecked"
+                                                />
                                                 <DockPanel HorizontalAlignment="Right">
                                                     <TextBlock Margin="5" Text="Turns Left" />
-                                                    <TextBox Name="TextDoom"
-                                                             Width="40"
-                                                             HorizontalAlignment="Right"
-                                                             KeyDown="TextBoxStat_KeyDown" />
+                                                    <TextBox
+                                                        Name="TextDoom"
+                                                        Width="40"
+                                                        HorizontalAlignment="Right"
+                                                        KeyDown="TextBoxStat_KeyDown"
+                                                    />
                                                 </DockPanel>
                                             </DockPanel>
                                         </StackPanel>
                                         <StackPanel Grid.Row="1" Grid.Column="0">
-                                            <CheckBox Name="CheckFlag8"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Power Break"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag6"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Magic Break"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag7"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Armor Break"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag5"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Mental Break"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag4"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Poison"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag3"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Petrification"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckPositiveFlag2"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Distill Power"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag3"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Distill Mana"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
+                                            <CheckBox
+                                                Name="CheckFlag8"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Power Break"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag6"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Magic Break"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag7"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Armor Break"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag5"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Mental Break"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag4"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Poison"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag3"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Petrification"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag2"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Distill Power"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag3"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Distill Mana"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
                                         </StackPanel>
                                         <StackPanel Grid.Row="1" Grid.Column="1">
-                                            <CheckBox Name="CheckFlag2"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Zombie"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag1"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="KO"
-                                                      Unchecked="CheckFlagNegative_Changed" />
+                                            <CheckBox
+                                                Name="CheckFlag2"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Zombie"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag1"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="KO"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
                                             <!--  4 unknown status  -->
-                                            <CheckBox Name="CheckFlag12"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Threaten"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag11"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Provoke"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag10"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Berserk"
-                                                      Unchecked="CheckFlagNegative_Changed" />
-                                            <CheckBox Name="CheckFlag9"
-                                                      Margin="2"
-                                                      Checked="CheckFlagNegative_Changed"
-                                                      Content="Confusion"
-                                                      Unchecked="CheckFlagNegative_Changed" />
+                                            <CheckBox
+                                                Name="CheckFlag12"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Threaten"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag11"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Provoke"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag10"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Berserk"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
+                                            <CheckBox
+                                                Name="CheckFlag9"
+                                                Margin="2"
+                                                Checked="CheckFlagNegative_Changed"
+                                                Content="Confusion"
+                                                Unchecked="CheckFlagNegative_Changed"
+                                            />
 
-                                            <CheckBox Name="CheckPositiveFlag4"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Distill Speed"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag6"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Distill Ability"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag4"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Distill Speed"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag6"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Distill Ability"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
                                         </StackPanel>
                                     </Grid>
                                 </GroupBox>
@@ -358,118 +449,162 @@
                                             <ColumnDefinition />
                                         </Grid.ColumnDefinitions>
                                         <StackPanel Grid.Column="0">
-                                            <CheckBox Name="CheckShell"
-                                                      Margin="2"
-                                                      Checked="CheckShell_OnChecked"
-                                                      Content="Shell"
-                                                      Unchecked="CheckShell_OnChecked" />
-                                            <CheckBox Name="CheckProtect"
-                                                      Margin="2"
-                                                      Checked="CheckProtect_OnChecked"
-                                                      Content="Protect"
-                                                      Unchecked="CheckProtect_OnChecked" />
-                                            <CheckBox Name="CheckReflect"
-                                                      Margin="2"
-                                                      Checked="CheckReflect_OnChecked"
-                                                      Content="Reflect"
-                                                      Unchecked="CheckReflect_OnChecked" />
-                                            <CheckBox Name="CheckNulTide"
-                                                      Margin="2"
-                                                      Checked="CheckNulTide_OnChecked"
-                                                      Content="NulTide"
-                                                      Unchecked="CheckNulTide_OnChecked" />
-                                            <CheckBox Name="CheckNulBlaze"
-                                                      Margin="2"
-                                                      Checked="CheckNulBlaze_OnChecked"
-                                                      Content="NulBlaze"
-                                                      Unchecked="CheckNulBlaze_OnChecked" />
-                                            <CheckBox Name="CheckNulShock"
-                                                      Margin="2"
-                                                      Checked="CheckNulShock_OnChecked"
-                                                      Content="NulShock"
-                                                      Unchecked="CheckNulShock_OnChecked" />
-                                            <CheckBox Name="CheckNulFrost"
-                                                      Margin="2"
-                                                      Checked="CheckNulFrost_OnChecked"
-                                                      Content="NulFrost"
-                                                      Unchecked="CheckNulFrost_OnChecked" />
-                                            <CheckBox Name="CheckRegen"
-                                                      Margin="2"
-                                                      Checked="CheckRegen_OnChecked"
-                                                      Content="Regen"
-                                                      Unchecked="CheckRegen_OnChecked" />
-                                            <CheckBox Name="CheckHaste"
-                                                      Margin="2"
-                                                      Checked="CheckHaste_OnChecked"
-                                                      Content="Haste"
-                                                      Unchecked="CheckHaste_OnChecked" />
-                                            <CheckBox Name="CheckSlow"
-                                                      Margin="2"
-                                                      Checked="CheckSlow_OnChecked"
-                                                      Content="Slow"
-                                                      Unchecked="CheckSlow_OnChecked" />
-                                            <CheckBox Name="CheckUnknown"
-                                                      Margin="2"
-                                                      Checked="CheckUnknown_OnChecked"
-                                                      Content="Unknown"
-                                                      Unchecked="CheckUnknown_OnChecked" />
+                                            <CheckBox
+                                                Name="CheckShell"
+                                                Margin="2"
+                                                Checked="CheckShell_OnChecked"
+                                                Content="Shell"
+                                                Unchecked="CheckShell_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckProtect"
+                                                Margin="2"
+                                                Checked="CheckProtect_OnChecked"
+                                                Content="Protect"
+                                                Unchecked="CheckProtect_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckReflect"
+                                                Margin="2"
+                                                Checked="CheckReflect_OnChecked"
+                                                Content="Reflect"
+                                                Unchecked="CheckReflect_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckNulTide"
+                                                Margin="2"
+                                                Checked="CheckNulTide_OnChecked"
+                                                Content="NulTide"
+                                                Unchecked="CheckNulTide_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckNulBlaze"
+                                                Margin="2"
+                                                Checked="CheckNulBlaze_OnChecked"
+                                                Content="NulBlaze"
+                                                Unchecked="CheckNulBlaze_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckNulShock"
+                                                Margin="2"
+                                                Checked="CheckNulShock_OnChecked"
+                                                Content="NulShock"
+                                                Unchecked="CheckNulShock_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckNulFrost"
+                                                Margin="2"
+                                                Checked="CheckNulFrost_OnChecked"
+                                                Content="NulFrost"
+                                                Unchecked="CheckNulFrost_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckRegen"
+                                                Margin="2"
+                                                Checked="CheckRegen_OnChecked"
+                                                Content="Regen"
+                                                Unchecked="CheckRegen_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckHaste"
+                                                Margin="2"
+                                                Checked="CheckHaste_OnChecked"
+                                                Content="Haste"
+                                                Unchecked="CheckHaste_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckSlow"
+                                                Margin="2"
+                                                Checked="CheckSlow_OnChecked"
+                                                Content="Slow"
+                                                Unchecked="CheckSlow_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckUnknown"
+                                                Margin="2"
+                                                Checked="CheckUnknown_OnChecked"
+                                                Content="Unknown"
+                                                Unchecked="CheckUnknown_OnChecked"
+                                            />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1">
-                                            <CheckBox Name="CheckPositiveFlag1"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Scan"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag5"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="-"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag7"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Shield"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag8"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Boost"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag9"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Eject"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag10"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Auto-Life"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag11"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Curse"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag12"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Defend"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag13"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Guard"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag14"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Sentinel"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
-                                            <CheckBox Name="CheckPositiveFlag16"
-                                                      Margin="2"
-                                                      Checked="CheckPositiveFlag_OnChecked"
-                                                      Content="Unknown"
-                                                      Unchecked="CheckPositiveFlag_OnChecked" />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag1"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Scan"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag5"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="-"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag7"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Shield"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag8"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Boost"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag9"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Eject"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag10"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Auto-Life"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag11"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Curse"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag12"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Defend"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag13"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Guard"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag14"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Sentinel"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
+                                            <CheckBox
+                                                Name="CheckPositiveFlag16"
+                                                Margin="2"
+                                                Checked="CheckPositiveFlag_OnChecked"
+                                                Content="Unknown"
+                                                Unchecked="CheckPositiveFlag_OnChecked"
+                                            />
                                         </StackPanel>
                                     </Grid>
                                 </GroupBox>

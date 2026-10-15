@@ -1,64 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace Farplane.FFX2.EditorPanels.Party
+namespace Farplane.FFX2.EditorPanels.Party;
+
+/// <summary>
+/// Interaction logic for PartyPanel.xaml
+/// </summary>
+public partial class PartyPanel : UserControl
 {
-    /// <summary>
-    /// Interaction logic for PartyPanel.xaml
-    /// </summary>
-    public partial class PartyPanel : UserControl
+    int _selected = 0;
+    bool _refresh;
+    readonly StatsPanel _statsPanel = new();
+    readonly DressphereAbilities _dressphereAbilities = new();
+
+    public PartyPanel()
     {
-        private int _selected = 0;
-        private bool _refresh;
-        private StatsPanel _statsPanel = new StatsPanel();
-        private DressphereAbilities _dressphereAbilities = new DressphereAbilities();
+        this._refresh = true;
 
-        public PartyPanel()
+        this.InitializeComponent();
+
+        this._refresh = false;
+    }
+
+    public void Refresh()
+    {
+        this._refresh = true;
+
+        this._statsPanel.Refresh(this._selected);
+
+        this._dressphereAbilities.SelectedIndex = this._selected;
+        this._dressphereAbilities.RefreshAbilities();
+        this._dressphereAbilities.ReloadDresspheres();
+
+        this._refresh = false;
+    }
+
+    void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (this._refresh)
         {
-            _refresh = true;
-
-            InitializeComponent();
-
-            _refresh = false;
+            return;
         }
 
-        public void Refresh()
+        this._selected = this.TabParty.SelectedIndex;
+        this.Refresh();
+    }
+
+    void TabEditor_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (this.TabEditor.SelectedIndex == 0)
         {
-            _refresh = true;
-
-            _statsPanel.Refresh(_selected);
-
-	        _dressphereAbilities.SelectedIndex = _selected;
-            _dressphereAbilities.RefreshAbilities();
-			_dressphereAbilities.ReloadDresspheres();
-
-            _refresh = false;
+            this.PartyEditor.Content = this._statsPanel;
         }
-
-        private void Selector_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        else
         {
-            if (_refresh) return;
-
-	        _selected = TabParty.SelectedIndex;
-            Refresh();
-        }
-
-        private void TabEditor_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (TabEditor.SelectedIndex == 0) PartyEditor.Content = _statsPanel;
-            else PartyEditor.Content = _dressphereAbilities;
+            this.PartyEditor.Content = this._dressphereAbilities;
         }
     }
 }

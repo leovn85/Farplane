@@ -1,129 +1,194 @@
-﻿using System;
-using System.CodeDom;
-using System.Collections.Generic;
+using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Binarysharp.MemoryManagement;
+using Farplane.Memory;
 
-namespace Farplane
+namespace Farplane;
+
+public static class LegacyMemoryReader
 {
-    public static class LegacyMemoryReader
+    static IntPtr _memoryHandle = IntPtr.Zero;
+    static Process _memoryProcess;
+
+    public static bool IsAttached => GameMemory.IsAttached;
+
+    internal static void Attach(Process process)
     {
-        private static IntPtr _memoryHandle;
-        private static Process _memoryProcess;
-
-        private static bool _isAttached
-            => _memoryHandle != IntPtr.Zero && _memoryProcess != null && _memoryProcess.HasExited == false;
-        
-
-        internal static void Attach(Process process)
+        Detach();
+        if (process == null || process.HasExited)
         {
-            Detach();
-
-            // Check if valid process
-            if (process == null || process.HasExited) return;
-
-            // Open memory for reading and store handle
-            var openHandle =
-                WinAPI.OpenProcess(56, false, process.Id);
-
-            if (openHandle == IntPtr.Zero) return;
-
-            _memoryProcess = process;
-            _memoryHandle = openHandle;
+            return;
         }
 
-        internal static bool CheckProcess()
+        _memoryProcess = process;
+        // Không mở handle thứ hai độc lập nếu GameMemory đã mở;
+        // nếu GameMemory chưa attach thì mở handle có quản lý giải phóng.
+        if (!GameMemory.IsAttached)
         {
-            if (_memoryProcess == null || _memoryProcess.HasExited)
-            {
-                Detach();
-                return false;
-            }
+            _memoryHandle = WinAPI.OpenProcess(
+                ProcessAccessFlags.VirtualMemoryOperation
+                    | ProcessAccessFlags.VirtualMemoryRead
+                    | ProcessAccessFlags.VirtualMemoryWrite
+                    | ProcessAccessFlags.QueryInformation,
+                false,
+                process.Id
+            );
+        }
+    }
+
+    internal static bool CheckProcess()
+    {
+        if (GameMemory.IsAttached)
+        {
             return true;
         }
 
-        internal static void Detach()
+        if (_memoryProcess == null || _memoryProcess.HasExited)
         {
-            _memoryProcess?.Dispose();
-            _memoryProcess = null;
+            Detach();
+            return false;
+        }
+        return true;
+    }
+
+    internal static void Detach()
+    {
+        if (_memoryHandle != IntPtr.Zero)
+        {
+            WinAPI.CloseHandle(_memoryHandle);
             _memoryHandle = IntPtr.Zero;
         }
 
-        public static int ReadInt32(int address, bool pointer = false)
+        _memoryProcess?.Dispose();
+        _memoryProcess = null;
+    }
+
+    public static int ReadInt32(int address, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
         {
-            var bytes = ReadBytes(address, 4, pointer);
-            return BitConverter.ToInt32(bytes, 0);
+            return GameMemory.Read<int>(address, isRelative: !pointer);
         }
 
-        public static Int16 ReadInt16(int address, bool pointer = false)
+        var bytes = ReadBytes(address, 4, pointer);
+        return bytes != null && bytes.Length >= 4 ? BitConverter.ToInt32(bytes, 0) : 0;
+    }
+
+    public static short ReadInt16(int address, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
         {
-            var bytes = ReadBytes(address, 2, pointer);
-            return BitConverter.ToInt16(bytes, 0);
+            return GameMemory.Read<short>(address, isRelative: !pointer);
         }
 
-        public static uint ReadUInt32(int address, bool pointer = false)
+        var bytes = ReadBytes(address, 2, pointer);
+        return bytes != null && bytes.Length >= 2 ? BitConverter.ToInt16(bytes, 0) : (short)0;
+    }
+
+    public static uint ReadUInt32(int address, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
         {
-            var bytes = ReadBytes(address, 4, pointer);
-            return BitConverter.ToUInt32(bytes, 0);
+            return GameMemory.Read<uint>(address, isRelative: !pointer);
         }
 
-        public static UInt16 ReadUInt16(int address, bool pointer = false)
+        var bytes = ReadBytes(address, 4, pointer);
+        return bytes != null && bytes.Length >= 4 ? BitConverter.ToUInt32(bytes, 0) : 0U;
+    }
+
+    public static ushort ReadUInt16(int address, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
         {
-            var bytes = ReadBytes(address, 2, pointer);
-            return BitConverter.ToUInt16(bytes, 0);
+            return GameMemory.Read<ushort>(address, isRelative: !pointer);
         }
 
-        public static bool ReadByteFlag(int address, bool pointer = false)
+        var bytes = ReadBytes(address, 2, pointer);
+        return bytes != null && bytes.Length >= 2 ? BitConverter.ToUInt16(bytes, 0) : (ushort)0;
+    }
+
+    public static bool ReadByteFlag(int address, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
         {
-            var bytes = ReadBytes(address, 1, pointer);
-            return bytes[0] == 1 ? true : false;
+            return GameMemory.Read<byte>(address, isRelative: !pointer) == 1;
         }
 
-        public static byte ReadByte(int address, bool pointer=false)
+        var bytes = ReadBytes(address, 1, pointer);
+        return bytes != null && bytes.Length > 0 && bytes[0] == 1;
+    }
+
+    public static byte ReadByte(int address, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
         {
-            var bytes = ReadBytes(address, 1, pointer);
-            return (byte) bytes[0];
+            return GameMemory.Read<byte>(address, isRelative: !pointer);
         }
 
-        public static byte[] ReadBytes(int address, int length, bool pointer = false)
-        {
-            if (!_isAttached) return null;
+        var bytes = ReadBytes(address, 1, pointer);
+        return bytes != null && bytes.Length > 0 ? bytes[0] : (byte)0;
+    }
 
-            
-                var readBuffer = new byte[length];
-            
-            var bytesRead = 0;
-            WinAPI.ReadProcessMemory(_memoryHandle, (pointer ? (IntPtr)0 : _memoryProcess.MainModule.BaseAddress) + address, readBuffer, length, bytesRead);
-            return readBuffer;
+    public static byte[] ReadBytes(int address, int length, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
+        {
+            return GameMemory.Read<byte>(address, length, isRelative: !pointer);
         }
 
-        public static bool WriteBytes(int address, byte[] bytes, bool pointer=false)
+        if (_memoryHandle == IntPtr.Zero || _memoryProcess == null || _memoryProcess.HasExited)
         {
-            if (!_isAttached) return false;
-
-            var writeBuffer = new byte[bytes.Length];
-            bytes.CopyTo(writeBuffer,0);
-            var bytesWritten = 0;
-
-            var success = WinAPI.WriteProcessMemory(_memoryHandle, (pointer ? (IntPtr)0 : _memoryProcess.MainModule.BaseAddress) + address, writeBuffer,
-                writeBuffer.Length, bytesWritten);
-
-            return success;
+            return null;
         }
 
-        public static bool WriteByte(int address, byte bytes, bool pointer=false)
+        var readBuffer = new byte[length];
+        var baseAddr = pointer ? IntPtr.Zero : _memoryProcess.MainModule.BaseAddress;
+        var success = WinAPI.ReadProcessMemory(
+            _memoryHandle,
+            baseAddr + address,
+            readBuffer,
+            length,
+            out _
+        );
+
+        return success ? readBuffer : null;
+    }
+
+    public static bool WriteBytes(int address, byte[] bytes, bool pointer = false)
+    {
+        if (bytes == null || bytes.Length == 0)
         {
-            if (!_isAttached) return false;
-
-            var bytesWritten = 0;
-
-            var success = WinAPI.WriteProcessMemory(_memoryHandle, (pointer ? (IntPtr)0 : _memoryProcess.MainModule.BaseAddress) + address, new byte[] {bytes}, 
-                1, bytesWritten);
-
-            return success;
+            return false;
         }
+
+        if (GameMemory.IsAttached)
+        {
+            GameMemory.Write(address, bytes, isRelative: !pointer);
+            return true;
+        }
+
+        if (_memoryHandle == IntPtr.Zero || _memoryProcess == null || _memoryProcess.HasExited)
+        {
+            return false;
+        }
+
+        var baseAddr = pointer ? IntPtr.Zero : _memoryProcess.MainModule.BaseAddress;
+        return WinAPI.WriteProcessMemory(
+            _memoryHandle,
+            baseAddr + address,
+            bytes,
+            bytes.Length,
+            out _
+        );
+    }
+
+    public static bool WriteByte(int address, byte b, bool pointer = false)
+    {
+        if (GameMemory.IsAttached)
+        {
+            GameMemory.Write(address, b, isRelative: !pointer);
+            return true;
+        }
+
+        return WriteBytes(address, [b], pointer);
     }
 }

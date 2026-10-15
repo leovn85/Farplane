@@ -1,70 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Farplane.Properties;
 using MahApps.Metro;
 using MahApps.Metro.Controls;
 
-namespace Farplane.Common.Controls
+namespace Farplane.Common.Controls;
+
+/// <summary>
+/// Interaction logic for ConfigFlyout.xaml
+/// </summary>
+public partial class ConfigFlyout : Flyout
 {
-    /// <summary>
-    /// Interaction logic for ConfigFlyout.xaml
-    /// </summary>
-    public partial class ConfigFlyout : Flyout
+    readonly bool canSetTheme = false;
+
+    public ConfigFlyout()
     {
-        private bool canSetTheme = false;
+        this.InitializeComponent();
 
-        public ConfigFlyout()
+        this.ComboTheme.ItemsSource = ThemeManager.AppThemes;
+        this.ComboAccent.ItemsSource = ThemeManager.Accents;
+
+        var currentTheme = ThemeManager.GetAppTheme(Settings.Default.AppTheme);
+        var currentAccent = ThemeManager.GetAccent(Settings.Default.AppAccent);
+
+        this.ComboTheme.SelectedIndex = ThemeManager.AppThemes.ToList().IndexOf(currentTheme);
+
+        this.ComboAccent.SelectedIndex = ThemeManager.Accents.ToList().IndexOf(currentAccent);
+
+        this.CheckNeverShowUnXWarning.IsChecked = Settings.Default.NeverShowUnXWarning;
+        this.CheckCloseWithGame.IsChecked = Settings.Default.CloseWithGame;
+        this.CheckShowAllProcesses.IsChecked = Settings.Default.ShowAllProcesses;
+
+        this.canSetTheme = true;
+    }
+
+    void ComboAccent_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!this.canSetTheme)
         {
-            InitializeComponent();
-
-            ComboTheme.ItemsSource = ThemeManager.AppThemes;
-            ComboAccent.ItemsSource = ThemeManager.Accents;
-
-            var currentTheme = ThemeManager.GetAppTheme(Settings.Default.AppTheme);
-            var currentAccent = ThemeManager.GetAccent(Settings.Default.AppAccent);
-
-            ComboTheme.SelectedIndex =
-                ThemeManager.AppThemes.ToList().IndexOf(currentTheme);
-
-            ComboAccent.SelectedIndex =
-                ThemeManager.Accents.ToList().IndexOf(currentAccent);
-
-            CheckNeverShowUnXWarning.IsChecked = Settings.Default.NeverShowUnXWarning;
-            CheckCloseWithGame.IsChecked = Settings.Default.CloseWithGame;
-            CheckShowAllProcesses.IsChecked = Settings.Default.ShowAllProcesses;
-			
-
-            canSetTheme = true;
+            return;
         }
 
-        private void ComboAccent_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        ThemeManager.ChangeAppStyle(
+            Application.Current,
+            (Accent)this.ComboAccent.SelectedItem,
+            (AppTheme)this.ComboTheme.SelectedItem
+        );
+        this.SettingUpdated(sender, e);
+    }
+
+    void SettingUpdated(object sender, RoutedEventArgs e)
+    {
+        if (!this.canSetTheme)
         {
-            if (!canSetTheme) return;
-            ThemeManager.ChangeAppStyle(Application.Current, (Accent)ComboAccent.SelectedItem, (AppTheme)ComboTheme.SelectedItem);
-            SettingUpdated(sender, e);
+            return;
         }
 
-        private void SettingUpdated(object sender, RoutedEventArgs e)
-        {
-            if (!canSetTheme) return;
-            Settings.Default.NeverShowUnXWarning = CheckNeverShowUnXWarning.IsChecked.Value;
-            Settings.Default.CloseWithGame = CheckCloseWithGame.IsChecked.Value;
-            Settings.Default.ShowAllProcesses = CheckShowAllProcesses.IsChecked.Value;
-            Settings.Default.AppAccent = (ComboAccent.SelectedItem as Accent).Name;
-            Settings.Default.AppTheme = (ComboTheme.SelectedItem as AppTheme).Name;
-            Settings.Default.Save();
-        }
+        Settings.Default.NeverShowUnXWarning = this.CheckNeverShowUnXWarning.IsChecked.Value;
+        Settings.Default.CloseWithGame = this.CheckCloseWithGame.IsChecked.Value;
+        Settings.Default.ShowAllProcesses = this.CheckShowAllProcesses.IsChecked.Value;
+        Settings.Default.AppAccent = (this.ComboAccent.SelectedItem as Accent).Name;
+        Settings.Default.AppTheme = (this.ComboTheme.SelectedItem as AppTheme).Name;
+        Settings.Default.Save();
     }
 }

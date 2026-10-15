@@ -1,57 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using Farplane.FFX.Data;
 
-namespace Farplane.Common
+namespace Farplane.Common;
+
+public static class StructHelper
 {
-    public static class StructHelper
+    public static int GetSize<T>() where T : struct => Marshal.SizeOf<T>();
+
+    public static int GetFieldOffset<T>(string fieldName, int baseOffset = 0) =>
+        baseOffset + (int)Marshal.OffsetOf<T>(fieldName);
+
+    public static T BytesToStruct<T>(byte[] bytes, int startIndex = 0) where T : struct
     {
-        public static int GetSize<T>()
+        var size = Marshal.SizeOf<T>();
+        if (bytes == null || bytes.Length < startIndex + size)
         {
-            return Marshal.SizeOf<T>();
+            return default;
         }
 
-        public static int GetFieldOffset<T>(string fieldName, int baseOffset = 0)
+        var handle = GCHandle.Alloc(bytes, GCHandleType.Pinned);
+        try
         {
-            int structSize = Marshal.SizeOf(typeof(PartyMember));
-            int writeOffset = 0;
+            var ptr = IntPtr.Add(handle.AddrOfPinnedObject(), startIndex);
+            return Marshal.PtrToStructure<T>(ptr);
+        }
+        finally
+        {
+            handle.Free();
+        }
+    }
 
-            // Iterate fields in type, attempt to locate requested field
-            foreach (var field in typeof(T).GetFields())
-            {
-                if (field.Name.ToLower() == fieldName.ToLower())
-                    break;
-
-                int fieldSize = 0;
-
-                foreach (var attribute in field.CustomAttributes)
-                {
-                    try
-                    {
-                        var sizeConst = attribute.NamedArguments.FirstOrDefault(arg => arg.MemberName == "SizeConst");
-                        fieldSize = (int)sizeConst.TypedValue.Value;
-                        break;
-                    }
-                    catch
-                    {
-                        continue;
-                    }
-                }
-
-                if (fieldSize == 0) fieldSize = Marshal.SizeOf(field.FieldType);
-
-                writeOffset += fieldSize;
-            }
-
-            // If reached end of struct, throw exception
-            if (writeOffset == structSize) throw new Exception($"Unable to find field: {fieldName}");
-
-            return baseOffset + writeOffset;
+    public static byte[] StructToBytes<T>(T structure) where T : struct
+    {
+        var size = Marshal.SizeOf<T>();
+        var bytes = new byte[size];
+        var ptr = Marshal.AllocHGlobal(size);
+        try
+        {
+            Marshal.StructureToPtr(structure, ptr, false);
+            Marshal.Copy(ptr, bytes, 0, size);
+            return bytes;
+        }
+        finally
+        {
+            Marshal.FreeHGlobal(ptr);
         }
     }
 }

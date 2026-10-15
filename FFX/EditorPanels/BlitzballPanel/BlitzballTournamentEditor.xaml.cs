@@ -1,127 +1,161 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Farplane.Common.Dialogs;
 using Farplane.FFX.Data;
 using Farplane.FFX.Values;
 using MahApps.Metro.Controls;
 
-namespace Farplane.FFX.EditorPanels.BlitzballPanel
+namespace Farplane.FFX.EditorPanels.BlitzballPanel;
+
+/// <summary>
+/// Interaction logic for BlitzballGeneralEditor.xaml
+/// </summary>
+public partial class BlitzballTournamentEditor : UserControl
 {
-    /// <summary>
-    /// Interaction logic for BlitzballGeneralEditor.xaml
-    /// </summary>
-    public partial class BlitzballTournamentEditor : UserControl
+    bool _refresh;
+
+    public BlitzballTournamentEditor()
     {
-        private bool _refresh;
+        this.InitializeComponent();
 
-        public BlitzballTournamentEditor()
+        this._refresh = true;
+        this.ComboTournamentStatus.ItemsSource = BlitzballValues.TournamentStates.Select(state =>
+            state.Name
+        );
+        foreach (
+            var teamCombo in this.FindChildren<ComboBox>()
+                .Where(child =>
+                    child.Name.StartsWith("ComboWinner") || child.Name.StartsWith("ComboTeam")
+                )
+        )
         {
-            InitializeComponent();
-
-            _refresh = true;
-            ComboTournamentStatus.ItemsSource = BlitzballValues.TournamentStates.Select(state => state.Name);
-            foreach (var teamCombo in this.FindChildren<ComboBox>().Where(child => child.Name.StartsWith("ComboWinner") || child.Name.StartsWith("ComboTeam")))
-                teamCombo.ItemsSource = BlitzballValues.Teams.Select(team => team.Name);
-            _refresh = false;
+            teamCombo.ItemsSource = BlitzballValues.Teams.Select(team => team.Name);
         }
 
-        public void Refresh()
+        this._refresh = false;
+    }
+
+    public void Refresh()
+    {
+        this._refresh = true;
+        var prizes = BlitzballValues.Prizes;
+        var blitzData = Blitzball.ReadBlitzballData();
+
+        // Tournament status
+        var tournamentStatusIndex = Array.IndexOf(
+            BlitzballValues.TournamentStates,
+            BlitzballValues.TournamentStates.First(state =>
+                state.Index == blitzData.TournamentStatus
+            )
+        );
+
+        this.ComboTournamentStatus.SelectedIndex = tournamentStatusIndex;
+
+        // Prizes
+        for (var i = 0; i < 8; i++)
         {
-            _refresh = true;
-            var prizes = BlitzballValues.Prizes;
-            var blitzData = Blitzball.ReadBlitzballData();
-
-            // Tournament status
-            var tournamentStatusIndex =
-                Array.IndexOf(BlitzballValues.TournamentStates, BlitzballValues.TournamentStates.First(state => state.Index == blitzData.TournamentStatus));
-
-            ComboTournamentStatus.SelectedIndex = tournamentStatusIndex;
-
-            // Prizes
-            for (int i = 0; i < 8; i++)
+            if (this.FindName($"Prize{i}") is not Button prizeButton)
             {
-                var prizeButton = FindName($"Prize{i}") as Button;
-                if (prizeButton == null) continue;
-                var currentPrize = prizes.FirstOrDefault(prize => prize.Index == blitzData.BlitzballPrizes[i]);
-                if (currentPrize != null)
-                    prizeButton.Content = currentPrize.Name;
-                else
-                    prizeButton.Content = $"???? [{blitzData.BlitzballPrizes[i].ToString("X2")}]";
+                continue;
             }
 
-            // Tournament teams
-            for (int i = 0; i < 6; i++)
+            var currentPrize = prizes.FirstOrDefault(prize =>
+                prize.Index == blitzData.BlitzballPrizes[i]
+            );
+            if (currentPrize != null)
             {
-                var comboTeam = FindName($"ComboTeam{i}") as ComboBox;
-                if (comboTeam == null) continue;
+                prizeButton.Content = currentPrize.Name;
+            }
+            else
+            {
+                prizeButton.Content = $"???? [{blitzData.BlitzballPrizes[i]:X2}]";
+            }
+        }
 
-                var currentTeam = BlitzballValues.Teams.First(team => team.Index == blitzData.TournamentMatchups[i]);
-                comboTeam.SelectedIndex = Array.IndexOf(BlitzballValues.Teams, currentTeam);
+        // Tournament teams
+        for (var i = 0; i < 6; i++)
+        {
+            if (this.FindName($"ComboTeam{i}") is not ComboBox comboTeam)
+            {
+                continue;
             }
 
-            // Tournament winners
-            for (int i = 0; i < 8; i++)
+            var currentTeam = BlitzballValues.Teams.First(team =>
+                team.Index == blitzData.TournamentMatchups[i]
+            );
+            comboTeam.SelectedIndex = Array.IndexOf(BlitzballValues.Teams, currentTeam);
+        }
+
+        // Tournament winners
+        for (var i = 0; i < 8; i++)
+        {
+            if (this.FindName($"ComboWinner{i}") is not ComboBox comboTeam)
             {
-                var comboTeam = FindName($"ComboWinner{i}") as ComboBox;
-                if (comboTeam == null) continue;
-
-                var currentTeam = BlitzballValues.Teams.First(team => team.Index == blitzData.TournamentWinners[i]);
-                comboTeam.SelectedIndex = Array.IndexOf(BlitzballValues.Teams, currentTeam);
+                continue;
             }
-            _refresh = false;
-        }
 
-        private void Prize_OnClick(object sender, RoutedEventArgs e)
+            var currentTeam = BlitzballValues.Teams.First(team =>
+                team.Index == blitzData.TournamentWinners[i]
+            );
+            comboTeam.SelectedIndex = Array.IndexOf(BlitzballValues.Teams, currentTeam);
+        }
+        this._refresh = false;
+    }
+
+    void Prize_OnClick(object sender, RoutedEventArgs e)
+    {
+        var prizeButton = sender as Button;
+        var prizeDialog = new SearchDialog(
+            BlitzballValues.Prizes.Select(prize => prize.Name).ToList(),
+            string.Empty,
+            false
+        );
+        var dialogResult = prizeDialog.ShowDialog();
+        if (dialogResult == false)
         {
-            var prizeButton = sender as Button;
-            var prizeDialog = new SearchDialog(BlitzballValues.Prizes.Select(prize => prize.Name).ToList(), string.Empty, false);
-            var dialogResult = prizeDialog.ShowDialog();
-            if (dialogResult == false) return;
-
-            var prizeNumber = int.Parse(prizeButton.Name.Substring(5));
-            var prizeIndex = BlitzballValues.Prizes[prizeDialog.ResultIndex].Index;
-            var blitzData = Blitzball.ReadBlitzballData();
-            blitzData.BlitzballPrizes[prizeNumber] = (ushort)prizeIndex;
-            Blitzball.WriteBlitzballData(blitzData);
-
-            Refresh();
+            return;
         }
 
-        private void ComboTeam_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        var prizeNumber = int.Parse(prizeButton.Name.Substring(5));
+        var prizeIndex = BlitzballValues.Prizes[prizeDialog.ResultIndex].Index;
+        var blitzData = Blitzball.ReadBlitzballData();
+        blitzData.BlitzballPrizes[prizeNumber] = (ushort)prizeIndex;
+        Blitzball.WriteBlitzballData(blitzData);
+
+        this.Refresh();
+    }
+
+    void ComboTeam_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (this._refresh)
         {
-            if (_refresh) return;
-            var teamBox = sender as ComboBox;
-            var teamNum = int.Parse(teamBox.Name.Substring(9));
-            var teamIndex = BlitzballValues.Teams[teamBox.SelectedIndex].Index;
-            var blitzData = Blitzball.ReadBlitzballData();
-            blitzData.TournamentMatchups[teamNum] = (byte)teamIndex;
-            Blitzball.WriteBlitzballData(blitzData);
-            Refresh();
+            return;
         }
 
-        private void ComboWinner_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+        var teamBox = sender as ComboBox;
+        var teamNum = int.Parse(teamBox.Name.Substring(9));
+        var teamIndex = BlitzballValues.Teams[teamBox.SelectedIndex].Index;
+        var blitzData = Blitzball.ReadBlitzballData();
+        blitzData.TournamentMatchups[teamNum] = (byte)teamIndex;
+        Blitzball.WriteBlitzballData(blitzData);
+        this.Refresh();
+    }
+
+    void ComboWinner_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (this._refresh)
         {
-            if (_refresh) return;
-            var teamBox = sender as ComboBox;
-            var teamNum = int.Parse(teamBox.Name.Substring(11));
-            var teamIndex = BlitzballValues.Teams[teamBox.SelectedIndex].Index;
-            var blitzData = Blitzball.ReadBlitzballData();
-            blitzData.TournamentWinners[teamNum] = (byte)teamIndex;
-            Blitzball.WriteBlitzballData(blitzData);
-            Refresh();
+            return;
         }
+
+        var teamBox = sender as ComboBox;
+        var teamNum = int.Parse(teamBox.Name.Substring(11));
+        var teamIndex = BlitzballValues.Teams[teamBox.SelectedIndex].Index;
+        var blitzData = Blitzball.ReadBlitzballData();
+        blitzData.TournamentWinners[teamNum] = (byte)teamIndex;
+        Blitzball.WriteBlitzballData(blitzData);
+        this.Refresh();
     }
 }

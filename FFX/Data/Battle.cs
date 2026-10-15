@@ -1,41 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Farplane.Common;
 using Farplane.FFX.Values;
 using Farplane.Memory;
 
-namespace Farplane.FFX.Data
+namespace Farplane.FFX.Data;
+
+public static class Battle
 {
-    public static class Battle
+    static int _offsetEnemyPointer => OffsetScanner.GetOffset(GameOffset.FFX_BattlePointerEnemy);
+    static int _offsetPartyPointer => OffsetScanner.GetOffset(GameOffset.FFX_BattlePointerParty);
+
+    public const int BlockLengthEntity = 0xF90;
+
+    public static bool GetBattleState()
     {
-        private static readonly int _offsetEnemyPointer = OffsetScanner.GetOffset(GameOffset.FFX_BattlePointerEnemy);
-        private static readonly int _offsetPartyPointer = OffsetScanner.GetOffset(GameOffset.FFX_BattlePointerParty);
+        var battlePointer = GameMemory.Read<uint>(_offsetPartyPointer, false);
+        return battlePointer != 0;
+    }
 
-        public const int BlockLengthEntity = 0xF90;
+    public static BattleEntityData GetPartyEntity(int entityIndex)
+    {
+        BattleEntity.ReadEntity(EntityType.Party, entityIndex, out var entityData);
+        return entityData;
+    }
 
-        public static bool GetBattleState()
-        {
-            var battlePointer = LegacyMemoryReader.ReadUInt32(_offsetPartyPointer);
-            return battlePointer != 0;
-        }
-
-        public static BattleEntityData GetPartyEntity(int entityIndex)
-        {
-            BattleEntityData entityData;
-            BattleEntity.ReadEntity(EntityType.Party, entityIndex, out entityData);
-            return entityData;
-        }
-
-        public static BattleEntityData GetEnemyEntity(int entityIndex)
-        {
-            BattleEntityData entityData;
-            BattleEntity.ReadEntity(EntityType.Enemy, entityIndex, out entityData);
-
-            return entityData;
-        }
-
+    public static BattleEntityData GetEnemyEntity(int entityIndex)
+    {
+        BattleEntity.ReadEntity(EntityType.Enemy, entityIndex, out var entityData);
+        return entityData;
     }
 }

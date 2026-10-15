@@ -1,127 +1,99 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Windows.Threading;
 using Farplane.FFX.Values;
 using Farplane.Memory;
 using CheckBox = System.Windows.Controls.CheckBox;
-using UserControl = System.Windows.Controls.UserControl;
 
-namespace Farplane.FFX.EditorPanels.Boosters
+namespace Farplane.FFX.EditorPanels.Boosters;
+
+/// <summary>
+/// Interaction logic for BoostersPanel.xaml
+/// </summary>
+public partial class BoostersPanel
 {
-    /// <summary>
-    /// Interaction logic for BoostersPanel.xaml
-    /// </summary>
-    public partial class BoostersPanel
+    static int _offsetInBattle => OffsetScanner.GetOffset(GameOffset.FFX_InBattleFlags);
+    static int _offsetGainedAp => OffsetScanner.GetOffset(GameOffset.FFX_GainedAPFlags);
+    readonly Thread _apThread;
+    readonly CancellationTokenSource _cts = new();
+    readonly bool[] _shareApChecked = new bool[8];
+    bool _sharedApEnabled;
+
+    public BoostersPanel()
     {
-	    private static readonly int _offsetInBattle = Offsets.GetOffset(OffsetType.PartyInBattleFlags);
-	    private static readonly int _offsetGainedAp = Offsets.GetOffset(OffsetType.PartyGainedApFlags);
-	    private Thread _apThread;
-	    private bool _sharedApEnabled;
-	    private byte[] _sharedApState = new byte[8];
+        this.InitializeComponent();
 
-	    public BoostersPanel()
+        for (var i = 0; i < 8; i++)
         {
-            InitializeComponent();
+            var isChecked = i != 7;
+            this._shareApChecked[i] = isChecked;
+            var boxIndex = i;
 
-	        _apThread = new Thread(SharedAPThread) {IsBackground = true};
-	        _apThread.Start();
-
-	        for (int i = 0; i < 8; i++)
-	        {
-		        ShareBoxes.Children.Add(new CheckBox()
-		        {
-			        Name = "CheckBoxAPShare" + i,
-			        Content = (Character) i,
-			        Margin = new Thickness(5),
-			        IsChecked = i != 7
-		        });
-	        }
+            var checkBox = new CheckBox()
+            {
+                Name = "CheckBoxAPShare" + i,
+                Content = (Character)i,
+                Margin = new Thickness(5),
+                IsChecked = isChecked,
+            };
+            checkBox.Checked += (s, e) => this._shareApChecked[boxIndex] = true;
+            checkBox.Unchecked += (s, e) => this._shareApChecked[boxIndex] = false;
+            this.ShareBoxes.Children.Add(checkBox);
         }
 
-        public void Refresh()
+        this._apThread = new Thread(this.SharedAPThread) { IsBackground = true };
+        this._apThread.Start();
+    }
+
+    public void Stop()
+    {
+        try
         {
-            // No refresh logic for this panel
+            this._cts.Cancel();
         }
+        catch { }
+    }
 
-        private void GiveAllItems_Click(object sender, RoutedEventArgs e)
+    public void Refresh()
+    {
+        // No refresh logic for this panel
+    }
+
+    void GiveAllItems_Click(object sender, RoutedEventArgs e) => Cheats.GiveAllItems();
+    void MaxAllStats_Click(object sender, RoutedEventArgs e) => Cheats.MaxAllStats();
+    void MaxSphereLevels_Click(object sender, RoutedEventArgs e) => Cheats.MaxSphereLevels();
+    void LearnAllAbilities_Click(object sender, RoutedEventArgs e) => Cheats.LearnAllAbilities();
+
+    void SharedAPToggle_Click(object sender, RoutedEventArgs e)
+    {
+        this._sharedApEnabled = !this._sharedApEnabled;
+        this.ButtonSharedAP.Content = this._sharedApEnabled ? "ENABLED" : "DISABLED";
+    }
+
+    void SharedAPThread()
+    {
+        while (!this._cts.Token.IsCancellationRequested)
         {
-            Cheats.GiveAllItems();
+            if (this._sharedApEnabled && GameMemory.IsAttached)
+            {
+                var offsetInBattle = _offsetInBattle;
+                var offsetGainedAp = _offsetGainedAp;
+                if (offsetInBattle != 0 && offsetGainedAp != 0)
+                {
+                    // Đọc và tính toán trực tiếp trên background thread, không gọi Dispatcher.Invoke
+                    var gainedAp = GameMemory.Read<byte>(offsetGainedAp, 8, false);
+                    var writeBuffer = new byte[8];
+                    for (var i = 0; i < 8; i++)
+                    {
+                        writeBuffer[i] = this._shareApChecked[i]
+                            ? (byte)1
+                            : (gainedAp != null ? gainedAp[i] : (byte)0);
+                    }
+                    GameMemory.Write(offsetInBattle, writeBuffer, false);
+                    GameMemory.Write(offsetGainedAp, writeBuffer, false);
+                }
+            }
+            Thread.Sleep(10);
         }
-
-        private void MaxAllStats_Click(object sender, RoutedEventArgs e)
-        {
-            Cheats.MaxAllStats();
-        }
-
-        private void MaxSphereLevels_Click(object sender, RoutedEventArgs e)
-        {
-            Cheats.MaxSphereLevels();
-        }
-
-        private void LearnAllAbilities_Click(object sender, RoutedEventArgs e)
-        {
-            Cheats.LearnAllAbilities();
-        }
-
-	    private void SharedAPToggle_Click(object sender, RoutedEventArgs e)
-	    {
-		    _sharedApEnabled = !_sharedApEnabled;
-
-		    ButtonSharedAP.Content = _sharedApEnabled ? "ENABLED" : "DISABLED";
-	    }
-
-	    private void UpdateSharedAPState()
-	    {
-		    var gainedAp = GameMemory.Read<byte>(_offsetGainedAp, 8);
-
-		    for (int i = 0; i < 8; i++)
-		    {
-			    var box = (CheckBox) ShareBoxes.Children[i];
-			    _sharedApState[i] = box.IsChecked.Value ? (byte) 1 : gainedAp[i];
-		    }
-	    }
-	    private void SharedAPThread()
-	    {
-		    while (true)
-		    {
-			    // Shared AP mod
-			    if (_sharedApEnabled)
-			    {
-				    if (!GameMemory.IsAttached) break;
-				    try
-				    {
-					    Dispatcher.Invoke(UpdateSharedAPState);
-				    }
-				    catch (Exception ex)
-				    {
-					    // App probably exited, silent exception
-				    }
-
-				    var writeBuffer = new byte[8];
-				    for (var i = 0; i < 8; i++)
-				    {
-					    writeBuffer[i] = _sharedApState[i];
-				    }
-
-				    GameMemory.Write(_offsetInBattle, writeBuffer);
-				    GameMemory.Write(_offsetGainedAp, writeBuffer);
-			    }
-
-			    Thread.Sleep(10);
-		    }
-	    }
     }
 }

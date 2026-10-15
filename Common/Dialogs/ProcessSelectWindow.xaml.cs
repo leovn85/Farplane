@@ -1,134 +1,155 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
+using System;
 using System.Diagnostics;
-using System.Drawing;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Farplane.FFX2;
 using Farplane.Memory;
 using Farplane.Properties;
 using MahApps.Metro.Controls;
 
-namespace Farplane.Common.Dialogs
+namespace Farplane.Common.Dialogs;
+
+/// <summary>
+/// Interaction logic for ProcessSelectWindow.xaml
+/// </summary>
+public partial class ProcessSelectWindow : MetroWindow
 {
-    /// <summary>
-    /// Interaction logic for ProcessSelectWindow.xaml
-    /// </summary>
-    public partial class ProcessSelectWindow : MetroWindow
+    readonly string _moduleName = string.Empty;
+    Process _selectedProcess;
+    public Process ResultProcess => this.DialogResult == false ? null : this._selectedProcess;
+    bool _ready;
+
+    public ProcessSelectWindow(string moduleName)
     {
-        private string _moduleName = string.Empty;
-        private Process _selectedProcess;
-        public Process ResultProcess => DialogResult == false ? null : _selectedProcess;
-        private bool _ready;
-
-        public ProcessSelectWindow(string moduleName)
+        this.InitializeComponent();
+        this._moduleName = moduleName;
+        if (Settings.Default.ShowAllProcesses)
         {
-            InitializeComponent();
-            _moduleName = moduleName;
+            this.ButtonShowAll.IsChecked = true;
+        }
+        this.PopulateProcessList(this._moduleName);
+    }
 
-            if (Settings.Default.ShowAllProcesses)
+    void PopulateProcessList(string moduleName)
+    {
+        this._ready = false;
+
+        // Giải phóng các Process cũ trước khi làm mới danh sách
+        foreach (var item in this.ProcessList.Items.OfType<ProcessListItem>())
+        {
+            if (item.Process != this._selectedProcess)
             {
-                ButtonShowAll.IsChecked = true;
+                item.Process?.Dispose();
+            }
+        }
+        this.ProcessList.Items.Clear();
+
+        var processes = Process.GetProcesses();
+        foreach (var process in processes)
+        {
+            if (
+                string.Compare(
+                    process.ProcessName,
+                    moduleName,
+                    StringComparison.CurrentCultureIgnoreCase
+                ) != 0
+                && !this.ButtonShowAll.IsChecked.GetValueOrDefault()
+            )
+            {
+                process.Dispose();
+                continue;
             }
 
-            PopulateProcessList(_moduleName);
-        }
-
-        private void PopulateProcessList(string moduleName)
-        {
-            _ready = false;
-            ProcessList.Items.Clear();
-
-            var processes = Process.GetProcesses();
-
-            foreach (var process in processes)
+            try
             {
-                if (string.Compare(process.ProcessName,moduleName, StringComparison.CurrentCultureIgnoreCase) != 0 && !ButtonShowAll.IsChecked.Value) continue;
+                var processFile = process.MainModule?.FileName;
+                ImageSource imageSource = null;
 
-                try
+                if (!string.IsNullOrEmpty(processFile))
                 {
-                    var processFile = process.MainModule.FileName;
-                    var icon = System.Drawing.Icon.ExtractAssociatedIcon(processFile);
-
-                    ImageSource imageSource = Imaging.CreateBitmapSourceFromHIcon(
-            icon.Handle,
-            Int32Rect.Empty,
-            BitmapSizeOptions.FromEmptyOptions());
-
-                    var processItem = new ProcessListItem
+                    using var icon = System.Drawing.Icon.ExtractAssociatedIcon(processFile);
+                    if (icon != null)
                     {
-                        ProcessIcon = imageSource,
-                        ProcessID = process.Id,
-                        ProcessName = process.ProcessName,
-                        Process = process
-                    };
-
-                    ProcessList.Items.Add(processItem);
+                        var bitmapSource = Imaging.CreateBitmapSourceFromHIcon(
+                            icon.Handle,
+                            Int32Rect.Empty,
+                            BitmapSizeOptions.FromEmptyOptions()
+                        );
+                        bitmapSource.Freeze();
+                        imageSource = bitmapSource;
+                    }
                 }
-                catch
+
+                var processItem = new ProcessListItem
                 {
-                    continue;
-                }
-                
+                    ProcessIcon = imageSource,
+                    ProcessID = process.Id,
+                    ProcessName = process.ProcessName,
+                    Process = process,
+                };
+                this.ProcessList.Items.Add(processItem);
             }
-            _ready = true;
+            catch
+            {
+                process.Dispose();
+                continue;
+            }
         }
-
-        private void SelectProcess_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_ready || ProcessList.SelectedItems.Count != 1) return;
-
-            var selectedProcess = ((ProcessListItem) ProcessList.SelectedItem).Process;
-            var attachResult = GameMemory.Attach(selectedProcess);
-            if (attachResult == false) return;
-            LegacyMemoryReader.Attach(selectedProcess);
-            _selectedProcess = selectedProcess;
-            DialogResult = true;
-            Close();
-        }
-
-        private void Refresh_Click(object sender, RoutedEventArgs e)
-        {
-            RefreshList();
-        }
-
-        private void RefreshList()
-        {
-            PopulateProcessList(ButtonShowAll.IsChecked != null && ButtonShowAll.IsChecked.Value ? string.Empty : _moduleName);
-        }
-
-        private void ShowAll_Click(object sender, RoutedEventArgs e)
-        {
-            if (!_ready) return;
-            RefreshList();
-        }
-
-        private void ButtonFileMode_OnClick(object sender, RoutedEventArgs e)
-        {
-            _selectedProcess = null;
-            DialogResult = true;
-            Close();
-        }
+        this._ready = true;
     }
 
-    class ProcessListItem
+    void SelectProcess_Click(object sender, RoutedEventArgs e)
     {
-        public ImageSource ProcessIcon { get; set; }
-        public int ProcessID { get; set; }
-        public string ProcessName { get; set; }
-        public Process Process { get; set; }
+        if (!this._ready || this.ProcessList.SelectedItems.Count != 1)
+        {
+            return;
+        }
+        var selectedItem = (ProcessListItem)this.ProcessList.SelectedItem;
+        var selectedProcess = selectedItem.Process;
+
+        var attachResult = GameMemory.Attach(selectedProcess);
+        if (!attachResult)
+        {
+            return;
+        }
+        LegacyMemoryReader.Attach(selectedProcess);
+        this._selectedProcess = selectedProcess;
+        this.DialogResult = true;
+        this.Close();
     }
 
+    void Refresh_Click(object sender, RoutedEventArgs e) => this.RefreshList();
+
+    void RefreshList() =>
+        this.PopulateProcessList(
+            this.ButtonShowAll.IsChecked != null && this.ButtonShowAll.IsChecked.Value
+                ? string.Empty
+                : this._moduleName
+        );
+
+    void ShowAll_Click(object sender, RoutedEventArgs e)
+    {
+        if (!this._ready)
+        {
+            return;
+        }
+        this.RefreshList();
+    }
+
+    void ButtonFileMode_OnClick(object sender, RoutedEventArgs e)
+    {
+        this._selectedProcess = null;
+        this.DialogResult = true;
+        this.Close();
+    }
+}
+
+class ProcessListItem
+{
+    public ImageSource ProcessIcon { get; set; }
+    public int ProcessID { get; set; }
+    public string ProcessName { get; set; }
+    public Process Process { get; set; }
 }

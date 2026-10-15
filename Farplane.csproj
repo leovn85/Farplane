@@ -1,533 +1,46 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4ED67F58-D849-450A-B5AF-C0F942E07280}</ProjectGuid>
+    <TargetFramework>net472</TargetFramework>
     <OutputType>WinExe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Farplane</RootNamespace>
-    <AssemblyName>Farplane</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <UseVSHostingProcess>true</UseVSHostingProcess>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>
+    <LangVersion>12</LangVersion>
+    <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
     <ApplicationIcon>Resources\Farplane_Icon.ico</ApplicationIcon>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>
-    </AssemblyOriginatorKeyFile>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="Fasm.NET, Version=1.0.4939.27955, Culture=neutral, processorArchitecture=x86">
-      <HintPath>..\packages\Fasm.NET.1.70.03\lib\Fasm.NET.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MahApps.Metro, Version=1.2.4.0, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.2.4.0\lib\net45\MahApps.Metro.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="MemorySharp, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MemorySharp.1.1.0\lib\MemorySharp.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Remoting" />
-    <Reference Include="System.Windows.Forms" />
-    <Reference Include="System.Windows.Interactivity, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\MahApps.Metro.1.2.4.0\lib\net45\System.Windows.Interactivity.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Xml" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xaml">
-      <RequiredTargetFramework>4.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-  </ItemGroup>
-  <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="Common\Dialogs\CreditsWindow.xaml.cs">
-      <DependentUpon>CreditsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Common\StringConverter.cs" />
-    <Compile Include="FFX2\EditorPanels\Party\PartyPanel.xaml.cs">
-      <DependentUpon>PartyPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\Data\AeonName.cs" />
-    <Compile Include="FFX\Data\Blitzball.cs" />
-    <Compile Include="FFX\Data\General.cs" />
-    <Compile Include="FFX\Data\KernelTable.cs" />
-    <Compile Include="FFX\Data\MonsterArena.cs" />
-    <Compile Include="FFX\Data\Skills.cs" />
-    <Compile Include="FFX\EditorPanels\BlitzballPanel\BlitzballLeagueEditor.xaml.cs">
-      <DependentUpon>BlitzballLeagueEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\BlitzballPanel\BlitzballTournamentEditor.xaml.cs">
-      <DependentUpon>BlitzballTournamentEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\SkillEditorPanel\CommandEditor.xaml.cs">
-      <DependentUpon>CommandEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\SkillEditorPanel\SkillDataPanel.xaml.cs">
-      <DependentUpon>SkillDataPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\SkillEditorPanel\SkillEditorPanel.xaml.cs">
-      <DependentUpon>SkillEditorPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Memory\Assembly.cs" />
-    <Compile Include="Memory\GameMemory.cs" />
-    <Compile Include="FFX\Data\Battle.cs" />
-    <None Include="Mods\FFX-SeymourInParty.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Compile Remove="Mods\FFX-AutoCamera.cs" />
     <None Include="Mods\FFX-AutoCamera.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Page Include="Common\Controls\ButtonGrid.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Common\Controls\ConfigFlyout.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Common\Dialogs\CreditsWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Common\Dialogs\SearchDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="FFX2\AbilitySlider.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\CreatureAbilities.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\CreatureEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\CreaturePanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\CreatureTrapping.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\DebugOptions.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\Party\DressphereAbilities.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\DressphereEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\GarmentGridEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\General.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="FFX2\EditorPanels\AccessoriesEditor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="FFX2\EditorPanels\ItemsEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\Party\PartyPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\EditorPanels\StatsPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX2\FFX2Editor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\Aeons\AeonsPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\Aeons\AeonStats.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="FFX\EditorPanels\Aeons\AeonAbilities.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="FFX\EditorPanels\Battle\BattlePanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\BlitzballPanel\BlitzballLeagueEditor.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="FFX\EditorPanels\BlitzballPanel\BlitzballTournamentEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\BlitzballPanel\BlitzballMatchPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\BlitzballPanel\BlitzballPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\BlitzballPanel\BlitzballPlayerEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\BlitzballPanel\BlitzballTeamEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\Debug\DebugPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\EquipmentPanel\EquipmentPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\GeneralPanel\GeneralPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\ItemsPanel\ItemsPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\MonsterArenaPanel\MonsterArenaPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\NotAvailablePanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\PartyPanel\PartyAbilities.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\PartyPanel\PartyEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\PartyPanel\PartyOverdrive.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\PartyPanel\PartyPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\PartyPanel\PartyStats.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\Boosters\BoostersPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\SkillEditorPanel\CommandEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\SkillEditorPanel\SkillDataPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\SkillEditorPanel\SkillEditorPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\SphereGridPanel\SphereGridEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\EditorPanels\SphereGridPanel\SphereGridPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="FFX\FFXEditor.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Common\BitHelper.cs" />
-    <Compile Include="Common\Controls\ButtonGrid.xaml.cs">
-      <DependentUpon>ButtonGrid.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Common\Controls\ConfigFlyout.xaml.cs">
-      <DependentUpon>ConfigFlyout.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Common\StructHelper.cs" />
-    <Compile Include="Common\Error.cs" />
-    <Compile Include="Common\Dialogs\SearchDialog.xaml.cs">
-      <DependentUpon>SearchDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\AbilitySlider.xaml.cs">
-      <DependentUpon>AbilitySlider.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\Cheats.cs" />
-    <Compile Include="FFX2\EditorPanels\CreatureAbilities.xaml.cs">
-      <DependentUpon>CreatureAbilities.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\CreatureEditor.xaml.cs">
-      <DependentUpon>CreatureEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\CreaturePanel.xaml.cs">
-      <DependentUpon>CreaturePanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\AccessoriesEditor.xaml.cs">
-      <DependentUpon>AccessoriesEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\CreatureTrapping.xaml.cs">
-      <DependentUpon>CreatureTrapping.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\DressphereEditor.xaml.cs">
-      <DependentUpon>DressphereEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\GarmentGridEditor.xaml.cs">
-      <DependentUpon>GarmentGridEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\ItemsEditor.xaml.cs">
-      <DependentUpon>ItemsEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\Values\AutoAbilities.cs" />
-    <Compile Include="FFX2\Values\Commands.cs" />
-    <Compile Include="FFX2\Values\Creatures.cs" />
-    <Compile Include="FFX2\Values\GarmentGrids.cs" />
-    <Compile Include="FFX2\Values\Items.cs" />
-    <Compile Include="FFX2\Values\Dresspheres.cs" />
-    <Compile Include="FFX2\EditorPanels\DebugOptions.xaml.cs">
-      <DependentUpon>DebugOptions.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\Party\DressphereAbilities.xaml.cs">
-      <DependentUpon>DressphereAbilities.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\General.xaml.cs">
-      <DependentUpon>General.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\EditorPanels\StatsPanel.xaml.cs">
-      <DependentUpon>StatsPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\FFX2Editor.xaml.cs">
-      <DependentUpon>FFX2Editor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX2\Offsets.cs" />
-    <Compile Include="FFX2\Values\Accessories.cs" />
-    <Compile Include="FFX\Cheats.cs" />
-    <Compile Include="FFX\Data\Party.cs" />
-    <Compile Include="FFX\EditorPanels\Aeons\AeonsPanel.xaml.cs">
-      <DependentUpon>AeonsPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\Aeons\AeonStats.xaml.cs">
-      <DependentUpon>AeonStats.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\Aeons\AeonAbilities.xaml.cs">
-      <DependentUpon>AeonAbilities.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\Battle\BattlePanel.xaml.cs">
-      <DependentUpon>BattlePanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\BlitzballPanel\BlitzballMatchPanel.xaml.cs">
-      <DependentUpon>BlitzballMatchPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\BlitzballPanel\BlitzballPanel.xaml.cs">
-      <DependentUpon>BlitzballPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\BlitzballPanel\BlitzballPlayerEditor.xaml.cs">
-      <DependentUpon>BlitzballPlayerEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\BlitzballPanel\BlitzballTeamEditor.xaml.cs">
-      <DependentUpon>BlitzballTeamEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\Debug\DebugPanel.xaml.cs">
-      <DependentUpon>DebugPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\EquipmentPanel\EquipmentPanel.xaml.cs">
-      <DependentUpon>EquipmentPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\GeneralPanel\GeneralPanel.xaml.cs">
-      <DependentUpon>GeneralPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\ItemsPanel\ItemsPanel.xaml.cs">
-      <DependentUpon>ItemsPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\MonsterArenaPanel\MonsterArenaPanel.xaml.cs">
-      <DependentUpon>MonsterArenaPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\NotAvailablePanel.xaml.cs">
-      <DependentUpon>NotAvailablePanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\PartyPanel\PartyAbilities.xaml.cs">
-      <DependentUpon>PartyAbilities.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\PartyPanel\PartyEditor.xaml.cs">
-      <DependentUpon>PartyEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\PartyPanel\PartyOverdrive.xaml.cs">
-      <DependentUpon>PartyOverdrive.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\PartyPanel\PartyPanel.xaml.cs">
-      <DependentUpon>PartyPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\PartyPanel\PartyStats.xaml.cs">
-      <DependentUpon>PartyStats.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\Boosters\BoostersPanel.xaml.cs">
-      <DependentUpon>BoostersPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\SphereGridPanel\SphereGridEditor.xaml.cs">
-      <DependentUpon>SphereGridEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\EditorPanels\SphereGridPanel\SphereGridPanel.xaml.cs">
-      <DependentUpon>SphereGridPanel.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\FFXEditor.xaml.cs">
-      <DependentUpon>FFXEditor.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="FFX\Offsets.cs" />
-    <Compile Include="FFX\Values\Ability.cs" />
-    <Compile Include="FFX\Values\AutoAbility.cs" />
-    <Compile Include="FFX\Values\BattleEntity.cs" />
-    <Compile Include="FFX\Values\BlitzballValues.cs" />
-    <Compile Include="FFX\Values\DamageFormula.cs" />
-    <Compile Include="FFX\Values\Enums.cs" />
-    <Compile Include="FFX\Values\EquipAppearances.cs" />
-    <Compile Include="FFX\Data\Equipment.cs" />
-    <Compile Include="FFX\Values\EquipName.cs" />
-    <Compile Include="FFX\Data\Item.cs" />
-    <Compile Include="FFX\Values\KeyItem.cs" />
-    <Compile Include="FFX\Values\MonsterArenaData.cs" />
-    <Compile Include="FFX\Values\OverdriveMode.cs" />
-    <Compile Include="FFX\Data\SphereGrid.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Common\Dialogs\ProcessSelectWindow.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="MemoryReader\LegacyMemoryReader.cs" />
-    <Compile Include="MemoryReader\WinAPI.cs" />
-    <Compile Include="Common\Dialogs\ProcessSelectWindow.xaml.cs">
-      <DependentUpon>ProcessSelectWindow.xaml</DependentUpon>
-    </Compile>
-    <None Include="Mods\FFX-BreakHPLimit.cs">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <Compile Remove="Mods\FFX-BreakDamageLimit.cs" />
     <None Include="Mods\FFX-BreakDamageLimit.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Remove="Mods\FFX-BreakHPLimit.cs" />
+    <None Include="Mods\FFX-BreakHPLimit.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Remove="Mods\FFX-HardBattle.cs" />
     <None Include="Mods\FFX-HardBattle.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Compile Remove="Mods\FFX-SeymourInParty.cs" />
+    <None Include="Mods\FFX-SeymourInParty.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Compile Remove="Mods\FFX2-BreakHPLimit.cs" />
     <None Include="Mods\FFX2-BreakHPLimit.cs">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Compile Include="Memory\OffsetScanner.cs" />
-    <Compile Include="Memory\SigScan.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
-    <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
-      <Generator>SettingsSingleFileGenerator</Generator>
-      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
-    </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Farplane_Icon.ico" />
-  </ItemGroup>
-  <ItemGroup>
+    <Resource Include="Fasm.NET.xml" />
     <Resource Include="FFX\Resources\MenuIcons\equip_0_0.png" />
     <Resource Include="FFX\Resources\MenuIcons\equip_0_1.png" />
     <Resource Include="FFX\Resources\MenuIcons\equip_1_0.png" />
@@ -542,46 +55,22 @@
     <Resource Include="FFX\Resources\MenuIcons\equip_5_1.png" />
     <Resource Include="FFX\Resources\MenuIcons\equip_6_0.png" />
     <Resource Include="FFX\Resources\MenuIcons\equip_6_1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\pin.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\reload.png" />
-  </ItemGroup>
-  <ItemGroup>
+    <Resource Include="Resources\Farplane.jpg" />
+    <Resource Include="Resources\Farplane_Icon.ico" />
     <Resource Include="Resources\Farplane_Splash.png" />
-  </ItemGroup>
-  <ItemGroup>
+    <Resource Include="Resources\Images\expand.png" />
+    <Resource Include="Resources\Images\pin.png" />
+    <Resource Include="Resources\Images\reload.png" />
     <Resource Include="Resources\Images\settings.png" />
-  </ItemGroup>
-  <ItemGroup>
+    <Resource Include="Resources\Images\showall.png" />
     <Resource Include="Resources\Images\shrink.png" />
   </ItemGroup>
+
   <ItemGroup>
-    <Resource Include="Resources\Images\expand.png" />
+    <PackageReference Include="Fasm.NET" Version="1.70.3.2" />
+    <PackageReference Include="MahApps.Metro" Version="1.6.5" />
+    <PackageReference Include="MemorySharp" Version="1.2.0" />
+    <PackageReference Include="System.Management" Version="10.0.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="10.0.0" />
   </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Fasm.NET.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Farplane.jpg" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Mods\FFX2-LimitBreak.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Credits.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Resource Include="Resources\Images\showall.png" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
