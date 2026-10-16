@@ -25,6 +25,7 @@ public static partial class GameMemory
         "7B00191231BB04903F5A59A18FEEACFF718C1D0AAB038FBF966586EDF75E4E27", // FFX with 4GB patch
         "D7F08CDA89DBCD6F429814E9523CE7A63A094417442A025573AFBBEF3251EF20", // FFX-2
         "78CE34397DA5E6F49B72C2AEBADEDAF4CD3F6720E1949D46A1B8ED67D3DB5CED", // FFX (2026 Steam)
+        "0537B2A1047F3266E73495CD4E35F63F0777F4231D417699F979954686DA686D", // FFX (2026 Steam Asia)
     ];
 
     internal static bool Attach(Process process)
@@ -50,7 +51,6 @@ public static partial class GameMemory
 
         CheckForUnX();
 
-        // Đăng ký sự kiện Exited chuẩn của Process thay vì luồng polling Sleep(1000)
         _attachedProcess = process;
         try
         {
@@ -59,7 +59,7 @@ public static partial class GameMemory
         }
         catch
         {
-            // Trường hợp không đủ quyền bật EnableRaisingEvents
+            // Case: no permission to turn on EnableRaisingEvents
         }
 
         if (_attachedProcess.HasExited)

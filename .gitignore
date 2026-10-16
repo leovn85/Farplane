@@ -329,3 +329,5 @@ ASALocalRun/
 .mfractor/
 
 !FFX/EditorPanels/Debug
+
+repomix.config.json

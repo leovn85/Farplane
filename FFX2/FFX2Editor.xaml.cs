@@ -43,7 +43,7 @@ public partial class FFX2Editor : MetroWindow
 
     protected override void OnClosed(EventArgs e)
     {
-        // Gỡ bỏ sự kiện tĩnh để tránh giữ tham chiếu Window và gây rò rỉ bộ nhớ
+        // Unsubscribe static event to prevent memory leaks
         GameMemory.ProcessExited -= this.Close;
         base.OnClosed(e);
     }

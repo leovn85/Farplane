@@ -120,6 +120,69 @@ public static class Party
         var offset = _offsetParty + (partyIndex * _blockLength);
         GameMemory.Write(offset, itemBytes, false);
     }
+
+    public static void RecalculateStats(int characterIndex = -1)
+    {
+        if (!GameMemory.IsAttached)
+            return;
+        var funcAddr = OffsetScanner.GetOffset(GameOffset.FFX_FuncCalcStats);
+        if (funcAddr == 0)
+            return;
+        var processHandle = GameMemory.Process.Handle;
+
+        byte[] shellcode;
+        if (characterIndex >= 0)
+        {
+            // Shellcode call sub_3860F0(characterIndex)
+            shellcode =
+            [
+                0x68, (byte)characterIndex, 0x00, 0x00, 0x00,       // push characterIndex
+                0xB8, (byte)funcAddr, (byte)(funcAddr >> 8), (byte)(funcAddr >> 16), (byte)(funcAddr >> 24), // mov eax, funcAddr
+                0xFF, 0xD0,                                         // call eax
+                0x83, 0xC4, 0x04,                                   // add esp, 4
+                0xC3                                                // ret
+            ];
+        }
+        else
+        {
+            // Shellcode loops from 0 to 7 to recalculate for the entire party (Tidus through Seymour)
+            shellcode =
+            [
+                0x60,                                               // pushad
+                0xB9, 0x08, 0x00, 0x00, 0x00,                       // mov ecx, 8
+                0x31, 0xF6,                                         // xor esi, esi
+                0x56,                                               // loop_start: push esi
+                0xB8, (byte)funcAddr, (byte)(funcAddr >> 8), (byte)(funcAddr >> 16), (byte)(funcAddr >> 24), // mov eax, funcAddr
+                0xFF, 0xD0,                                         // call eax
+                0x83, 0xC4, 0x04,                                   // add esp, 4
+                0x46,                                               // inc esi
+                0x49,                                               // dec ecx
+                0x75, 0xF0,                                         // jnz loop_start (-16 bytes)
+                0x61,                                               // popad
+                0xC3                                                // ret
+            ];
+        }
+
+        var allocMem = WinAPI.VirtualAllocEx(processHandle, IntPtr.Zero, (uint)shellcode.Length, 0x1000 | 0x2000, 0x40); // MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE
+        if (allocMem == IntPtr.Zero)
+            return;
+        try
+        {
+            if (WinAPI.WriteProcessMemory(processHandle, allocMem, shellcode, shellcode.Length, out _))
+            {
+                var hThread = WinAPI.CreateRemoteThread(processHandle, IntPtr.Zero, 0, allocMem, IntPtr.Zero, 0, out _);
+                if (hThread != IntPtr.Zero)
+                {
+                    WinAPI.WaitForSingleObject(hThread, 1000);
+                    WinAPI.CloseHandle(hThread);
+                }
+            }
+        }
+        finally
+        {
+            WinAPI.VirtualFreeEx(processHandle, allocMem, 0, 0x8000); // MEM_RELEASE
+        }
+    }
 }
 
 [StructLayout(LayoutKind.Sequential, Pack = 0, CharSet = CharSet.Ansi, Size = 0x94)]

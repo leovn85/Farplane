@@ -1,123 +1,94 @@
-//css_reference "..\bin\Debug\farplane.exe";
 using System;
-using System.Linq;
-using System.Windows;
 using Farplane;
-using Farplane.Common;
 using Farplane.FarplaneMod;
-using Farplane.FFX;
-using Farplane.FFX.Data;
-using Farplane.FFX.Values;
 using Farplane.Memory;
 
 public class FFXBreakHPLimit : IFarplaneMod
 {
     private bool _modActive = false;
-    private static int _offsetHPLimit = 0x386897;
-    private static int _offsetMPLimit = 0x3868BF;
-    private static int _offsetHPCheck = 0x38D389;
-    private static int _offsetMPCheck = 0x38E5FE;
+
+    private static int OffsetHPIn => OffsetScanner.GetOffset(GameOffset.FFX_HPLimitInBattle);
+    private static int OffsetMPIn => OffsetScanner.GetOffset(GameOffset.FFX_MPLimitInBattle);
+    private static int OffsetHPOut => OffsetScanner.GetOffset(GameOffset.FFX_HPLimitOutOfBattle);
+    private static int OffsetMPOut => OffsetScanner.GetOffset(GameOffset.FFX_MPLimitOutOfBattle);
+
+    private byte[] _origHPIn;
+    private byte[] _origMPIn;
+    private byte[] _origHPOut;
+    private byte[] _origMPOut;
 
     public void Configure(object parentWindow) { }
+    public string ConfigButton => null;
+    public bool AutoActivate => true;
+    public string Name => "Break HP Limit";
+    public string Author => "Topher";
+    public string Description => "Remove the HP/MP cap allowing HP and MP to exceed 99999.";
+    public GameType GameType => GameType.FFX;
 
-    public string ConfigButton
-    {
-        get { return null; }
-    }
-    public bool AutoActivate
-    {
-        get { return true; }
-    }
-    public string Name
-    {
-        get { return "Break HP Limit"; }
-    }
+    public ModState GetState() => _modActive ? ModState.Activated : ModState.Deactivated;
 
-    public string Author
-    {
-        get { return "Topher"; }
-    }
-
-    public string Description
-    {
-        get { return "Remove the HP/MP cap allowing HP and MP to exceed 99999."; }
-    }
-
-    public GameType GameType
-    {
-        get { return GameType.FFX; }
-    }
-
-    public ModState GetState()
-    {
-        if (_modActive)
-            return ModState.Activated;
-        return ModState.Deactivated;
-    }
-
-    private byte[] _originalHPLimit;
-    private byte[] _originalMPLimit;
-    private byte[] _originalHPCheck;
-    private byte[] _originalMPCheck;
+    // mov eax, 7FFFFFFFh (5 bytes) + 5 NOPs = 10 bytes overwrite and eax, ...; add eax, ...
+    private static readonly byte[] Patch10Bytes =
+    [
+        0xB8, 0xFF, 0xFF, 0xFF, 0x7F, // mov eax, 7FFFFFFFh
+        0x90, 0x90, 0x90, 0x90, 0x90  // 5x NOP
+    ];
 
     public void Activate()
     {
-        if (_modActive)
+        if (_modActive || !GameMemory.IsAttached)
             return;
+
         ModLogger.WriteLine("Activating Break HP/MP Limit");
 
-        var bytesHPLimit = GameMemory.Assembly.Generate("mov eax,7FFFFFFF", _offsetHPLimit);
-        var bytesMPLimit = GameMemory.Assembly.Generate("mov eax,7FFFFFFF", _offsetMPLimit);
-        var bytesHPCheck = GameMemory.Assembly.Generate(
-            new[] { "and eax, 7FFFFFFF", "nop", "nop", "nop", "nop", "nop" },
-            _offsetHPCheck
-        );
-        var bytesMPCheck = GameMemory.Assembly.Generate("push 7fffffff", _offsetMPCheck);
+        var hpIn = OffsetHPIn;
+        var mpIn = OffsetMPIn;
+        var hpOut = OffsetHPOut;
+        var mpOut = OffsetMPOut;
 
-        // Lưu lại byte gốc trước khi ghi đè
-        if (_originalHPLimit == null)
-            _originalHPLimit = GameMemory.Read<byte>(_offsetHPLimit, bytesHPLimit.Length);
-        if (_originalMPLimit == null)
-            _originalMPLimit = GameMemory.Read<byte>(_offsetMPLimit, bytesMPLimit.Length);
-        if (_originalHPCheck == null)
-            _originalHPCheck = GameMemory.Read<byte>(_offsetHPCheck, bytesHPCheck.Length);
-        if (_originalMPCheck == null)
-            _originalMPCheck = GameMemory.Read<byte>(_offsetMPCheck, bytesMPCheck.Length);
+        if (hpIn == 0 || mpIn == 0 || hpOut == 0 || mpOut == 0)
+            return;
 
-        // Tiêm đúng vào cả 4 địa chỉ tương ứng
-        GameMemory.Write(_offsetHPLimit, bytesHPLimit);
-        GameMemory.Write(_offsetMPLimit, bytesMPLimit);
-        GameMemory.Write(_offsetHPCheck, bytesHPCheck);
-        GameMemory.Write(_offsetMPCheck, bytesMPCheck);
+        if (_origHPIn == null)
+            _origHPIn = GameMemory.Read<byte>(hpIn, 10, isRelative: false);
+        if (_origMPIn == null)
+            _origMPIn = GameMemory.Read<byte>(mpIn, 10, isRelative: false);
+        if (_origHPOut == null)
+            _origHPOut = GameMemory.Read<byte>(hpOut, 10, isRelative: false);
+        if (_origMPOut == null)
+            _origMPOut = GameMemory.Read<byte>(mpOut, 10, isRelative: false);
+
+        GameMemory.Write(hpIn, Patch10Bytes, isRelative: false);
+        GameMemory.Write(mpIn, Patch10Bytes, isRelative: false);
+        GameMemory.Write(hpOut, Patch10Bytes, isRelative: false);
+        GameMemory.Write(mpOut, Patch10Bytes, isRelative: false);
 
         _modActive = true;
     }
+
     public void Deactivate()
     {
-        if (!_modActive)
+        if (!_modActive || !GameMemory.IsAttached)
             return;
+
         ModLogger.WriteLine("Deactivating Break HP/MP Limit");
 
-        // Khôi phục lại toàn bộ mã máy gốc
-        if (_originalHPLimit != null)
-            GameMemory.Write(_offsetHPLimit, _originalHPLimit);
-        if (_originalMPLimit != null)
-            GameMemory.Write(_offsetMPLimit, _originalMPLimit);
-        if (_originalHPCheck != null)
-            GameMemory.Write(_offsetHPCheck, _originalHPCheck);
-        if (_originalMPCheck != null)
-            GameMemory.Write(_offsetMPCheck, _originalMPCheck);
+        var hpIn = OffsetHPIn;
+        var mpIn = OffsetMPIn;
+        var hpOut = OffsetHPOut;
+        var mpOut = OffsetMPOut;
+
+        if (_origHPIn != null && hpIn != 0)
+            GameMemory.Write(hpIn, _origHPIn, isRelative: false);
+        if (_origMPIn != null && mpIn != 0)
+            GameMemory.Write(mpIn, _origMPIn, isRelative: false);
+        if (_origHPOut != null && hpOut != 0)
+            GameMemory.Write(hpOut, _origHPOut, isRelative: false);
+        if (_origMPOut != null && mpOut != 0)
+            GameMemory.Write(mpOut, _origMPOut, isRelative: false);
 
         _modActive = false;
     }
 
-    public static void ValidateBytes(byte[] bytes)
-    {
-        // Verify bytes against original bytes here
-    }
-
-    public void Update()
-    {
-        return;
-    }
+    public void Update() { }
 }

@@ -160,13 +160,33 @@ public partial class MainWindow : MetroWindow
 
             if (processSelect.ResultProcess == null)
             {
-                var FFXEditor = new FFXEditor(true);
-                FFXEditor.ShowDialog();
+                try
+                {
+                    var FFXEditor = new FFXEditor(true);
+                    FFXEditor.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error running FFXEditor:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                                    "Start Editor Error",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                }
             }
             else
             {
-                var FFXEditor = new FFXEditor();
-                FFXEditor.ShowDialog();
+                try
+                {
+                    var FFXEditor = new FFXEditor();
+                    FFXEditor.ShowDialog();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error running FFXEditor:\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                                    "Start Editor Error",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+                }
             }
             GameMemory.Detach();
             if (Settings.Default.CloseWithGame)

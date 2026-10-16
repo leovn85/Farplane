@@ -49,27 +49,25 @@ public partial class SphereGridEditor : UserControl
         {
             return;
         }
-
         SphereGrid.SetNodeType(
             this._currentNode,
             SphereGrid.NodeTypes[this.ComboNodeType.SelectedIndex].ID
         );
+        Party.RecalculateStats();
     }
-
     void SphereGridActivation_Changed(object sender, RoutedEventArgs e)
     {
         if (this._refreshing)
         {
             return;
         }
-
         var senderBox = sender as CheckBox;
         var senderIndex = this.PanelNodeActivatedBy.Children.IndexOf(senderBox);
-
         var current = SphereGrid.ReadNode(this._currentNode);
         var actCurrent = current.ActivatedBy;
         actCurrent = BitHelper.ToggleBit(actCurrent, senderIndex);
         SphereGrid.SetNodeActivation(this._currentNode, actCurrent);
+        Party.RecalculateStats();
         this.Refresh();
     }
 

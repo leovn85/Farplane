@@ -2,25 +2,21 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Threading;
 using Farplane.Common;
 using Farplane.FFX.Data;
 using Farplane.FFX.Values;
+using Farplane.Memory;
 using MahApps.Metro.Controls;
 
 namespace Farplane.FFX.EditorPanels.Battle;
 
-/// <summary>
-/// Interaction logic for BattlePanel.xaml
-/// </summary>
 public partial class BattlePanel : UserControl
 {
-    bool _canWriteData = false;
-
+    bool _canWriteData;
     readonly BattleEntityData[] _partyEntities = new BattleEntityData[18];
     readonly BattleEntityData[] _enemyEntities = new BattleEntityData[8];
-
-    int _enemyCount = 0;
-    int _partyCount = 0;
+    readonly DispatcherTimer _autoRefreshTimer;
 
     bool IsInBattle => BattleEntity.CheckBattleState();
 
@@ -30,13 +26,18 @@ public partial class BattlePanel : UserControl
 
         foreach (var tabItem in this.TabBattle.Items)
         {
-            ControlsHelper.SetHeaderFontSize((UIElement)tabItem, 14);
+            ControlsHelper.SetHeaderFontSize((UIElement)tabItem, 13);
         }
-
         foreach (var tabItem in this.TabEntity.Items)
         {
-            ControlsHelper.SetHeaderFontSize((UIElement)tabItem, 14);
+            ControlsHelper.SetHeaderFontSize((UIElement)tabItem, 12);
         }
+
+        this._autoRefreshTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromSeconds(1)
+        };
+        this._autoRefreshTimer.Tick += this.AutoRefreshTimer_Tick;
 
         this._canWriteData = true;
     }
@@ -54,23 +55,29 @@ public partial class BattlePanel : UserControl
         }
 
         this._canWriteData = false;
-        if (this.TabBattle.SelectedIndex == 0)
+        try
         {
-            this.RefreshParty();
+            if (this.TabBattle.SelectedIndex == 0)
+            {
+                this.RefreshParty();
+            }
+            else
+            {
+                this.RefreshEnemies();
+            }
+
+            this.RefreshEntity();
         }
-        else
+        finally
         {
-            this.RefreshEnemies();
+            this._canWriteData = true;
         }
-
-        this.RefreshEntity();
-
-        this._canWriteData = true;
     }
 
     bool CheckBattleState()
     {
-        if (this.IsInBattle)
+        var inBattle = this.IsInBattle;
+        if (inBattle)
         {
             this.StackBattle.Visibility = Visibility.Visible;
             this.TextEnterBattle.Visibility = Visibility.Collapsed;
@@ -80,73 +87,85 @@ public partial class BattlePanel : UserControl
             this.StackBattle.Visibility = Visibility.Collapsed;
             this.TextEnterBattle.Visibility = Visibility.Visible;
         }
-        return this.IsInBattle;
+        return inBattle;
     }
 
     public void RefreshEnemies()
     {
-        this._enemyCount = 0;
         for (var i = 0; i < 8; i++)
         {
             var success = BattleEntity.ReadEntity(EntityType.Enemy, i, out var readEntity);
-
             this._enemyEntities[i] = readEntity;
+
+            var tabItem = this.TabEntity.Items[i] as TabItem;
+            if (tabItem == null)
+                continue;
 
             if (readEntity.pointer_1 == 0 || !success)
             {
-                (this.TabEntity.Items[i] as TabItem).Visibility = Visibility.Collapsed;
+                tabItem.Visibility = Visibility.Collapsed;
                 continue;
             }
-            var entityTab = this.TabEntity.Items[i] as TabItem;
-            entityTab.Visibility = Visibility.Visible;
-            entityTab.Header = StringConverter.ToASCII(readEntity.text_name);
 
-            this._enemyCount++;
+            tabItem.Visibility = Visibility.Visible;
+            var enemyName = StringConverter.ToASCII(readEntity.text_name);
+            tabItem.Header = string.IsNullOrWhiteSpace(enemyName) ? $"Enemy {i + 1}" : enemyName;
         }
     }
 
     public void RefreshParty()
     {
-        this._partyCount = 0;
-        for (var i = 0; i < Enum.GetValues(typeof(Character)).Length - 1; i++)
+        var totalParty = Enum.GetValues(typeof(Character)).Length - 1; // Exclude None
+        for (var i = 0; i < 8; i++)
         {
+            var tabItem = this.TabEntity.Items[i] as TabItem;
+            if (tabItem == null)
+                continue;
+
+            if (i >= totalParty)
+            {
+                tabItem.Visibility = Visibility.Collapsed;
+                continue;
+            }
+
             var success = BattleEntity.ReadEntity(EntityType.Party, i, out var readEntity);
             this._partyEntities[i] = readEntity;
 
             if (readEntity.pointer_1 == 0 || !success)
             {
-                (this.TabEntity.Items[i] as TabItem).Visibility = Visibility.Collapsed;
+                tabItem.Visibility = Visibility.Collapsed;
                 continue;
             }
 
-            var entityTab = this.TabEntity.Items[i] as TabItem;
-            entityTab.Visibility = Visibility.Visible;
-            entityTab.Header = ((Character)i).ToString();
-            this._partyCount++;
+            tabItem.Visibility = Visibility.Visible;
+            tabItem.Header = ((Character)i).ToString();
         }
     }
 
     public void RefreshEntity()
     {
-        //if (TabBattle.SelectedIndex == 0 && TabEntity.SelectedIndex >= _partyCount)
-        //    TabEntity.SelectedIndex = 0;
+        var entityType = (EntityType)this.TabBattle.SelectedIndex;
+        var entityIndex = Math.Max(0, this.TabEntity.SelectedIndex);
 
-        //if (TabBattle.SelectedIndex == 1 && TabEntity.SelectedIndex >= _enemyCount)
-        //    TabEntity.SelectedIndex = 0;
+        BattleEntity.ReadEntity(entityType, entityIndex, out var entityData);
 
-        BattleEntity.ReadEntity(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            out var entityData
-        );
-
-        // Refresh stats panel
+        // Vitals & Turn Gauges
         this.TextCurrentHP.Text = entityData.hp_current.ToString();
-        this.TextCurrentMP.Text = entityData.mp_current.ToString();
         this.TextMaxHP.Text = entityData.hp_max.ToString();
+        this.TextCurrentMP.Text = entityData.mp_current.ToString();
         this.TextMaxMP.Text = entityData.mp_max.ToString();
+        this.TextOverkill.Text = entityData.overkill.ToString();
+
+        this.TextCTB.Text = entityData.ctb.ToString();
+        this.TextMaxCTB.Text = entityData.max_ctb.ToString();
+
         this.TextOverdrive.Text = entityData.overdrive_current.ToString();
         this.TextOverdriveMax.Text = entityData.overdrive_max.ToString();
+
+        this.TextStealCount.Text = entityData.steal_count.ToString();
+        this.TextBribeGil.Text = entityData.bribe_gil_spent.ToString();
+
+        // Base Attributes
         this.TextStrength.Text = entityData.strength.ToString();
         this.TextDefense.Text = entityData.defense.ToString();
         this.TextMagic.Text = entityData.magic.ToString();
@@ -156,250 +175,266 @@ public partial class BattlePanel : UserControl
         this.TextEvasion.Text = entityData.evasion.ToString();
         this.TextAccuracy.Text = entityData.accuracy.ToString();
 
-        // Refresh negative status checkboxes
-        var statusFlags = BitHelper.GetBitArray(entityData.status_flags_negative);
-        for (var i = 0; i < 16; i++)
-        {
-            var boxName = "CheckFlag" + (i + 1).ToString().Trim();
-            var box = (CheckBox)this.FindName(boxName);
-            if (box == null)
-            {
-                continue;
-            }
+        // Stat Boosts (In-Battle Ups)
+        this.TextStrengthUp.Text = entityData.strength_up.ToString();
+        this.TextDefenseUp.Text = entityData.defense_up.ToString();
+        this.TextMagicUp.Text = entityData.magic_up.ToString();
+        this.TextMagicDefUp.Text = entityData.magic_defense_up.ToString();
+        this.TextAgilityUp.Text = entityData.agility_up.ToString();
+        this.TextLuckUp.Text = entityData.luck_up.ToString();
+        this.TextEvasionUp.Text = entityData.evasion_up.ToString();
+        this.TextAccuracyUp.Text = entityData.accuracy_up.ToString();
 
-            box.IsChecked = statusFlags[i];
+        // Stacks (0 - 5)
+        this.TextCheerStacks.Text = entityData.cheer_stacks.ToString();
+        this.TextAimStacks.Text = entityData.aim_stacks.ToString();
+        this.TextFocusStacks.Text = entityData.focus_stacks.ToString();
+        this.TextReflexStacks.Text = entityData.reflex_stacks.ToString();
+        this.TextLuckStacks.Text = entityData.luck_stacks.ToString();
+        this.TextJinxStacks.Text = entityData.jinx_stacks.ToString();
+
+        // Negative Ailments
+        var negBytes = BitConverter.GetBytes(entityData.status_flags_negative);
+        var negFlags = BitHelper.GetBitArray(negBytes, 16);
+        for (var i = 0; i < 12; i++)
+        {
+            var box = (CheckBox)this.FindName($"CheckFlag{i + 1}");
+            if (box != null)
+            {
+                box.IsChecked = negFlags[i];
+            }
         }
 
         this.CheckSilence.IsChecked = entityData.status_turns_silence != 0;
         this.TextSilence.Text = entityData.status_turns_silence.ToString();
-
         this.CheckDarkness.IsChecked = entityData.status_turns_darkness != 0;
         this.TextDarkness.Text = entityData.status_turns_darkness.ToString();
-
         this.CheckSleep.IsChecked = entityData.status_turns_sleep != 0;
         this.TextSleep.Text = entityData.status_turns_sleep.ToString();
-
         this.TextDoom.Text = entityData.timer_doom.ToString();
 
-        // Refresh positive status checkboxes
+        // Positive & Defensive Statuses
         this.CheckShell.IsChecked = entityData.status_shell != 0;
         this.CheckProtect.IsChecked = entityData.status_protect != 0;
         this.CheckReflect.IsChecked = entityData.status_reflect != 0;
+        this.CheckRegen.IsChecked = entityData.status_regen != 0;
+        this.CheckHaste.IsChecked = entityData.status_haste != 0;
+        this.CheckSlow.IsChecked = entityData.status_slow != 0;
+
         this.CheckNulTide.IsChecked = entityData.status_nultide != 0;
         this.CheckNulBlaze.IsChecked = entityData.status_nulblaze != 0;
         this.CheckNulShock.IsChecked = entityData.status_nulshock != 0;
         this.CheckNulFrost.IsChecked = entityData.status_nulfrost != 0;
-        this.CheckRegen.IsChecked = entityData.status_regen != 0;
-        this.CheckHaste.IsChecked = entityData.status_haste != 0;
-        this.CheckSlow.IsChecked = entityData.status_slow != 0;
-        this.CheckUnknown.IsChecked = entityData.status_unknown != 0;
 
-        var posFlags = BitHelper.GetBitArray(entityData.status_flags_positive);
+        var posBytes = BitConverter.GetBytes(entityData.status_flags_positive);
+        var posFlags = BitHelper.GetBitArray(posBytes, 16);
         for (var i = 0; i < 16; i++)
         {
-            var boxName = "CheckPositiveFlag" + (i + 1).ToString().Trim();
-            var box = (CheckBox)this.FindName(boxName);
-            if (box == null)
+            var box = (CheckBox)this.FindName($"CheckPositiveFlag{i + 1}");
+            if (box != null)
             {
-                continue;
+                box.IsChecked = posFlags[i];
             }
-
-            box.IsChecked = posFlags[i];
         }
     }
 
-    void SetPositiveStatus(
-        EntityType entityType,
-        int entityIndex,
-        string statusOffset,
-        bool statusState
-    )
+    void SetPositiveStatus(string statusOffset, bool statusState)
     {
         if (!this._canWriteData)
-        {
             return;
-        }
-
         BattleEntity.WriteBytes(
-            entityType,
-            entityIndex,
+            (EntityType)this.TabBattle.SelectedIndex,
+            this.TabEntity.SelectedIndex,
             statusOffset,
             statusState ? (byte)0xFF : (byte)0
         );
     }
 
-    void TabBattle_OnSelectionChanged(object sender, SelectionChangedEventArgs e) => this.Refresh();
+    void TabBattle_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.Source is TabControl)
+            this.Refresh();
+    }
 
-    void TabEntity_OnSelectionChanged(object sender, SelectionChangedEventArgs e) => this.Refresh();
+    void TabEntity_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (e.Source is TabControl)
+            this.Refresh();
+    }
+
+    void ButtonRefresh_Click(object sender, RoutedEventArgs e) => this.Refresh();
+
+    void CheckAutoRefresh_Changed(object sender, RoutedEventArgs e)
+    {
+        if (this.CheckAutoRefresh.IsChecked == true)
+        {
+            this._autoRefreshTimer.Start();
+        }
+        else
+        {
+            this._autoRefreshTimer.Stop();
+        }
+    }
+
+    void AutoRefreshTimer_Tick(object sender, EventArgs e)
+    {
+        if (!GameMemory.IsAttached || !this.IsInBattle)
+        {
+            return;
+        }
+
+        // Skip refresh tick while user is actively typing in any TextBox
+        var focused = FocusManager.GetFocusedElement(Window.GetWindow(this));
+        if (focused is TextBox)
+        {
+            return;
+        }
+
+        this.Refresh();
+    }
 
     void TextBoxStat_KeyDown(object sender, KeyEventArgs e)
     {
-        if (e.Key != Key.Enter)
+        if (e.Key != Key.Enter || !this.CheckBattleState() || !this._canWriteData)
         {
             return;
         }
 
-        if (!this.CheckBattleState())
-        {
+        if (sender is not TextBox senderBox)
             return;
-        }
 
-        if (!this._canWriteData)
-        {
-            return;
-        }
+        var entityType = (EntityType)this.TabBattle.SelectedIndex;
+        var entityIndex = this.TabEntity.SelectedIndex;
 
-        var senderBox = sender as TextBox;
         try
         {
             switch (senderBox.Name)
             {
+                // Vitals
                 case "TextCurrentHP":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.hp_current),
-                        BitConverter.GetBytes(int.Parse(senderBox.Text))
-                    );
-                    break;
-                case "TextCurrentMP":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.mp_current),
-                        BitConverter.GetBytes(int.Parse(senderBox.Text))
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.hp_current), BitConverter.GetBytes(int.Parse(senderBox.Text)));
                     break;
                 case "TextMaxHP":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.hp_max),
-                        BitConverter.GetBytes(int.Parse(senderBox.Text))
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.hp_max), BitConverter.GetBytes(int.Parse(senderBox.Text)));
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.hp_max2), BitConverter.GetBytes(int.Parse(senderBox.Text)));
                     break;
-
+                case "TextCurrentMP":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.mp_current), BitConverter.GetBytes(int.Parse(senderBox.Text)));
+                    break;
                 case "TextMaxMP":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.mp_max),
-                        BitConverter.GetBytes(int.Parse(senderBox.Text))
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.mp_max), BitConverter.GetBytes(int.Parse(senderBox.Text)));
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.mp_max2), BitConverter.GetBytes(int.Parse(senderBox.Text)));
+                    break;
+                case "TextOverkill":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.overkill), BitConverter.GetBytes(int.Parse(senderBox.Text)));
+                    break;
+                case "TextCTB":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.ctb), byte.Parse(senderBox.Text));
+                    break;
+                case "TextMaxCTB":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.max_ctb), byte.Parse(senderBox.Text));
                     break;
                 case "TextOverdrive":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.overdrive_current),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.overdrive_current), byte.Parse(senderBox.Text));
                     break;
                 case "TextOverdriveMax":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.overdrive_max),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.overdrive_max), byte.Parse(senderBox.Text));
                     break;
+                case "TextStealCount":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.steal_count), byte.Parse(senderBox.Text));
+                    break;
+                case "TextBribeGil":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.bribe_gil_spent), BitConverter.GetBytes(uint.Parse(senderBox.Text)));
+                    break;
+
+                // Base Attributes
                 case "TextStrength":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.strength),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.strength), byte.Parse(senderBox.Text));
                     break;
                 case "TextDefense":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.defense),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.defense), byte.Parse(senderBox.Text));
                     break;
                 case "TextMagic":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.magic),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.magic), byte.Parse(senderBox.Text));
                     break;
                 case "TextMagicDefense":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.magic_defense),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.magic_defense), byte.Parse(senderBox.Text));
                     break;
                 case "TextAgility":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.agility),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.agility), byte.Parse(senderBox.Text));
                     break;
                 case "TextLuck":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.luck),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.luck), byte.Parse(senderBox.Text));
                     break;
                 case "TextEvasion":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.evasion),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.evasion), byte.Parse(senderBox.Text));
                     break;
                 case "TextAccuracy":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.accuracy),
-                        byte.Parse(senderBox.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.accuracy), byte.Parse(senderBox.Text));
                     break;
+
+                // Stat Boosts (Ups)
+                case "TextStrengthUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.strength_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextDefenseUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.defense_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextMagicUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.magic_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextMagicDefUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.magic_defense_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextAgilityUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.agility_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextLuckUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.luck_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextEvasionUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.evasion_up), byte.Parse(senderBox.Text));
+                    break;
+                case "TextAccuracyUp":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.accuracy_up), byte.Parse(senderBox.Text));
+                    break;
+
+                // Stacks (0-5)
+                case "TextCheerStacks":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.cheer_stacks), byte.Parse(senderBox.Text));
+                    break;
+                case "TextAimStacks":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.aim_stacks), byte.Parse(senderBox.Text));
+                    break;
+                case "TextFocusStacks":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.focus_stacks), byte.Parse(senderBox.Text));
+                    break;
+                case "TextReflexStacks":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.reflex_stacks), byte.Parse(senderBox.Text));
+                    break;
+                case "TextLuckStacks":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.luck_stacks), byte.Parse(senderBox.Text));
+                    break;
+                case "TextJinxStacks":
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.jinx_stacks), byte.Parse(senderBox.Text));
+                    break;
+
+                // Turns Left
                 case "TextDoom":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.timer_doom),
-                        byte.Parse(this.TextDoom.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.timer_doom), byte.Parse(senderBox.Text));
                     break;
                 case "TextSilence":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.status_turns_silence),
-                        byte.Parse(this.TextSilence.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.status_turns_silence), byte.Parse(senderBox.Text));
                     break;
                 case "TextDarkness":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.status_turns_darkness),
-                        byte.Parse(this.TextDarkness.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.status_turns_darkness), byte.Parse(senderBox.Text));
                     break;
                 case "TextSleep":
-                    BattleEntity.WriteBytes(
-                        (EntityType)this.TabBattle.SelectedIndex,
-                        this.TabEntity.SelectedIndex,
-                        nameof(BattleEntityData.status_turns_sleep),
-                        byte.Parse(this.TextSleep.Text)
-                    );
+                    BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.status_turns_sleep), byte.Parse(senderBox.Text));
                     break;
             }
+
+            senderBox.SelectAll();
         }
         catch
         {
@@ -409,260 +444,102 @@ public partial class BattlePanel : UserControl
 
     void CheckSleep_OnChecked(object sender, RoutedEventArgs e)
     {
-        if (!this.CheckBattleState())
-        {
+        if (!this.CheckBattleState() || !this._canWriteData)
             return;
-        }
-
-        if (!this._canWriteData)
+        byte turns = 0;
+        if (this.CheckSleep.IsChecked == true)
         {
-            return;
+            byte.TryParse(this.TextSleep.Text, out turns);
+            if (turns == 0)
+                turns = 3;
         }
-
-        byte statusTurns = 0;
-
-        if (this.CheckSleep.IsChecked.Value)
-        {
-            try
-            {
-                statusTurns = byte.Parse(this.TextSleep.Text);
-            }
-            catch { }
-
-            if (statusTurns == 0)
-            {
-                statusTurns = 3;
-            }
-        }
-
-        BattleEntity.WriteBytes(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_turns_sleep",
-            statusTurns
-        );
-
+        BattleEntity.WriteBytes((EntityType)this.TabBattle.SelectedIndex, this.TabEntity.SelectedIndex, nameof(BattleEntityData.status_turns_sleep), turns);
         this.Refresh();
     }
 
     void CheckDarkness_OnChecked(object sender, RoutedEventArgs e)
     {
-        if (!this.CheckBattleState())
-        {
+        if (!this.CheckBattleState() || !this._canWriteData)
             return;
-        }
-
-        if (!this._canWriteData)
+        byte turns = 0;
+        if (this.CheckDarkness.IsChecked == true)
         {
-            return;
+            byte.TryParse(this.TextDarkness.Text, out turns);
+            if (turns == 0)
+                turns = 3;
         }
-
-        byte statusTurns = 0;
-        if (this.CheckDarkness.IsChecked.Value)
-        {
-            try
-            {
-                statusTurns = byte.Parse(this.TextDarkness.Text);
-            }
-            catch { }
-            if (statusTurns == 0)
-            {
-                statusTurns = 3;
-            }
-        }
-
-        BattleEntity.WriteBytes(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_turns_darkness",
-            statusTurns
-        );
-
+        BattleEntity.WriteBytes((EntityType)this.TabBattle.SelectedIndex, this.TabEntity.SelectedIndex, nameof(BattleEntityData.status_turns_darkness), turns);
         this.Refresh();
     }
 
     void CheckSilence_OnChecked(object sender, RoutedEventArgs e)
     {
-        if (!this.CheckBattleState())
-        {
+        if (!this.CheckBattleState() || !this._canWriteData)
             return;
-        }
-
-        if (!this._canWriteData)
+        byte turns = 0;
+        if (this.CheckSilence.IsChecked == true)
         {
-            return;
+            byte.TryParse(this.TextSilence.Text, out turns);
+            if (turns == 0)
+                turns = 3;
         }
-
-        byte statusTurns = 0;
-
-        if (this.CheckSilence.IsChecked.Value)
-        {
-            try
-            {
-                statusTurns = byte.Parse(this.TextSilence.Text);
-            }
-            catch { }
-            if (statusTurns == 0)
-            {
-                statusTurns = 3;
-            }
-        }
-
-        BattleEntity.WriteBytes(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_turns_silence",
-            statusTurns
-        );
-
+        BattleEntity.WriteBytes((EntityType)this.TabBattle.SelectedIndex, this.TabEntity.SelectedIndex, nameof(BattleEntityData.status_turns_silence), turns);
         this.Refresh();
     }
 
     void CheckFlagNegative_Changed(object sender, RoutedEventArgs e)
     {
         if (!this._canWriteData)
-        {
             return;
-        }
+        if (sender is not CheckBox checkBox)
+            return;
 
-        var name = (sender as CheckBox).Name;
-        var index = int.Parse(name.Substring(9)) - 1;
+        var index = int.Parse(checkBox.Name.Substring(9)) - 1;
+        var entityType = (EntityType)this.TabBattle.SelectedIndex;
+        var entityIndex = this.TabEntity.SelectedIndex;
 
-        var byteIndex = index / 8;
-        var bitIndex = index % 8;
+        BattleEntity.ReadEntity(entityType, entityIndex, out var readEntity);
+        var flags = readEntity.status_flags_negative;
 
-        BattleEntity.ReadEntity(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            out var readEntity
-        );
+        if (checkBox.IsChecked == true)
+            flags |= (ushort)(1 << index);
+        else
+            flags &= (ushort)~(1 << index);
 
-        var negativeFlags = readEntity.status_flags_negative;
-        negativeFlags[byteIndex] = BitHelper.ToggleBit(negativeFlags[byteIndex], bitIndex);
-
-        BattleEntity.WriteBytes(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_flags_negative",
-            negativeFlags
-        );
+        BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.status_flags_negative), BitConverter.GetBytes(flags));
     }
 
-    void CheckShell_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_shell",
-            this.CheckShell.IsChecked.Value
-        );
+    void CheckShell_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_shell), this.CheckShell.IsChecked == true);
+    void CheckProtect_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_protect), this.CheckProtect.IsChecked == true);
+    void CheckReflect_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_reflect), this.CheckReflect.IsChecked == true);
+    void CheckRegen_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_regen), this.CheckRegen.IsChecked == true);
+    void CheckHaste_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_haste), this.CheckHaste.IsChecked == true);
+    void CheckSlow_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_slow), this.CheckSlow.IsChecked == true);
 
-    void CheckProtect_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_protect",
-            this.CheckProtect.IsChecked.Value
-        );
-
-    void CheckReflect_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_reflect",
-            this.CheckReflect.IsChecked.Value
-        );
-
-    void CheckNulTide_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_nultide",
-            this.CheckNulTide.IsChecked.Value
-        );
-
-    void CheckNulBlaze_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_nulblaze",
-            this.CheckNulBlaze.IsChecked.Value
-        );
-
-    void CheckNulShock_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_nulshock",
-            this.CheckNulShock.IsChecked.Value
-        );
-
-    void CheckNulFrost_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_nulfrost",
-            this.CheckNulFrost.IsChecked.Value
-        );
-
-    void CheckRegen_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_regen",
-            this.CheckRegen.IsChecked.Value
-        );
-
-    void CheckHaste_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_haste",
-            this.CheckHaste.IsChecked.Value
-        );
-
-    void CheckSlow_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_slow",
-            this.CheckSlow.IsChecked.Value
-        );
-
-    void CheckUnknown_OnChecked(object sender, RoutedEventArgs e) =>
-        this.SetPositiveStatus(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_unknown",
-            this.CheckUnknown.IsChecked.Value
-        );
+    void CheckNulTide_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_nultide), this.CheckNulTide.IsChecked == true);
+    void CheckNulBlaze_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_nulblaze), this.CheckNulBlaze.IsChecked == true);
+    void CheckNulShock_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_nulshock), this.CheckNulShock.IsChecked == true);
+    void CheckNulFrost_OnChecked(object sender, RoutedEventArgs e) => this.SetPositiveStatus(nameof(BattleEntityData.status_nulfrost), this.CheckNulFrost.IsChecked == true);
 
     void CheckPositiveFlag_OnChecked(object sender, RoutedEventArgs e)
     {
         if (!this._canWriteData)
-        {
             return;
-        }
+        if (sender is not CheckBox checkBox)
+            return;
 
-        var name = (sender as CheckBox).Name;
-        var index = int.Parse(name.Substring(17)) - 1;
+        var index = int.Parse(checkBox.Name.Substring(17)) - 1;
+        var entityType = (EntityType)this.TabBattle.SelectedIndex;
+        var entityIndex = this.TabEntity.SelectedIndex;
 
-        var byteIndex = index / 8;
-        var bitIndex = index % 8;
+        BattleEntity.ReadEntity(entityType, entityIndex, out var readEntity);
+        var flags = readEntity.status_flags_positive;
 
-        BattleEntity.ReadEntity(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            out var readEntity
-        );
+        if (checkBox.IsChecked == true)
+            flags |= (ushort)(1 << index);
+        else
+            flags &= (ushort)~(1 << index);
 
-        var positiveFlags = readEntity.status_flags_positive;
-        positiveFlags[byteIndex] = BitHelper.ToggleBit(positiveFlags[byteIndex], bitIndex);
-
-        BattleEntity.WriteBytes(
-            (EntityType)this.TabBattle.SelectedIndex,
-            this.TabEntity.SelectedIndex,
-            "status_flags_positive",
-            positiveFlags
-        );
+        BattleEntity.WriteBytes(entityType, entityIndex, nameof(BattleEntityData.status_flags_positive), BitConverter.GetBytes(flags));
     }
 }

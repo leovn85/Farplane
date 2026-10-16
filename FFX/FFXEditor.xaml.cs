@@ -81,7 +81,7 @@ public partial class FFXEditor : MetroWindow
     protected override void OnClosed(EventArgs e)
     {
         this._boostersPanel?.Stop();
-        // Gỡ bỏ sự kiện tĩnh để tránh giữ tham chiếu Window và gây rò rỉ bộ nhớ
+        // Unsubscribe static event to prevent memory leaks
         GameMemory.ProcessExited -= this.Close;
         base.OnClosed(e);
     }

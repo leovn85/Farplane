@@ -20,8 +20,8 @@ public static class LegacyMemoryReader
         }
 
         _memoryProcess = process;
-        // Không mở handle thứ hai độc lập nếu GameMemory đã mở;
-        // nếu GameMemory chưa attach thì mở handle có quản lý giải phóng.
+        // Do not open an independent second handle if GameMemory is already open;
+        // if GameMemory is not attached, open a handle with release management.
         if (!GameMemory.IsAttached)
         {
             _memoryHandle = WinAPI.OpenProcess(

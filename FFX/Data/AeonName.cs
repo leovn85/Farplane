@@ -13,7 +13,7 @@ public class AeonName
         {
             return;
         }
-        var offset = _offsetAeonNames + 0xA0 + AeonNames[partyIndex - 8];
+        var offset = _offsetAeonNames + AeonNames[partyIndex - 8];
         var aeonName = StringConverter.ToFFX(name);
         var nameBytes = new byte[aeonName.Length + 1];
         aeonName.CopyTo(nameBytes, 0);
@@ -26,7 +26,7 @@ public class AeonName
         {
             return null;
         }
-        var offset = _offsetAeonNames + 0xA0 + AeonNames[partyIndex - 8];
+        var offset = _offsetAeonNames + AeonNames[partyIndex - 8];
         var nameBytes = GameMemory.Read<byte>(offset, 8, false);
         return StringConverter.ToASCII(nameBytes);
     }

@@ -80,7 +80,7 @@ public partial class BoostersPanel
                 var offsetGainedAp = _offsetGainedAp;
                 if (offsetInBattle != 0 && offsetGainedAp != 0)
                 {
-                    // Đọc và tính toán trực tiếp trên background thread, không gọi Dispatcher.Invoke
+                    // Read and compute on background thread without Dispatcher.Invoke
                     var gainedAp = GameMemory.Read<byte>(offsetGainedAp, 8, false);
                     var writeBuffer = new byte[8];
                     for (var i = 0; i < 8; i++)

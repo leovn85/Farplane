@@ -15,9 +15,6 @@ using MahApps.Metro.Controls;
 
 namespace Farplane.FFX.EditorPanels.EquipmentPanel;
 
-/// <summary>
-///     Interaction logic for EquipmentPanel.xaml
-/// </summary>
 public partial class EquipmentPanel : UserControl
 {
     const string NameUnknown = "????";
@@ -49,17 +46,12 @@ public partial class EquipmentPanel : UserControl
     {
         this.InitializeComponent();
 
-        // Initialize equipment item view
         for (var charaIndex = 0; charaIndex < 18; charaIndex++)
         {
             this.ComboEquipmentCharacter.Items.Add((Character)charaIndex);
         }
 
-        for (
-            var formulaIndex = 0;
-            formulaIndex < DamageFormula.DamageFormulas.Length;
-            formulaIndex++
-        )
+        for (var formulaIndex = 0; formulaIndex < DamageFormula.DamageFormulas.Length; formulaIndex++)
         {
             this.ComboDamageFormula.Items.Add(DamageFormula.DamageFormulas[formulaIndex].Name);
         }
@@ -68,9 +60,7 @@ public partial class EquipmentPanel : UserControl
     public void Refresh()
     {
         this._refreshing = true;
-
         this.ListEquipment.Items.Clear();
-
         var items = Equipment.ReadItems();
 
         for (var equipmentSlot = 0; equipmentSlot < Equipment.MaxItems; equipmentSlot++)
@@ -81,6 +71,7 @@ public partial class EquipmentPanel : UserControl
                 Height = 24,
                 Name = "ImageIcon",
             };
+
             var textName = new TextBlock
             {
                 VerticalAlignment = VerticalAlignment.Center,
@@ -92,19 +83,17 @@ public partial class EquipmentPanel : UserControl
                 Children = { imageIcon, textName },
                 Margin = new Thickness(0),
             };
-            var listItem = new ListViewItem { Content = panelItem };
 
+            var listItem = new ListViewItem { Content = panelItem };
             var currentItem = items[equipmentSlot];
 
             if (currentItem.Character > 6)
             {
-                // Aeon or Seymour, no name available
                 var charaName = ((Character)currentItem.Character).ToString();
                 textName.Text = $"{NameUnknown} [{charaName}]";
             }
             else if (currentItem.SlotOccupied == 0)
             {
-                // Empty slot
                 textName.Text = NameEmpty;
             }
             else
@@ -122,14 +111,12 @@ public partial class EquipmentPanel : UserControl
         }
 
         this.RefreshSelectedItem();
-
         this._refreshing = false;
     }
 
     void RefreshSelectedItem()
     {
         this._refreshing = true;
-
         if (this._selectedItem == -1)
         {
             this._selectedItem = 0;
@@ -137,17 +124,9 @@ public partial class EquipmentPanel : UserControl
 
         this._currentItem = Equipment.ReadItem(this._selectedItem);
 
-        if (
-            (this._selectedItem >= 0x0C && this._selectedItem <= 0x21)
-            || this._currentItem.SlotOccupied == 0
-        )
-        {
-            this.ButtonDeleteItem.IsEnabled = false;
-        }
-        else
-        {
-            this.ButtonDeleteItem.IsEnabled = true;
-        }
+        var isProtectedSlot = this._selectedItem < 0x22 || this._currentItem.SlotOccupied == 0;
+        this.ButtonDeleteItem.IsEnabled = !isProtectedSlot;
+        this.ButtonSellItem.IsEnabled = !isProtectedSlot;
 
         var listItem = this.ListEquipment.Items[this._selectedItem] as ListViewItem;
         var imageIcon = (listItem.Content as DockPanel).FindChild<Image>("ImageIcon");
@@ -157,7 +136,6 @@ public partial class EquipmentPanel : UserControl
         {
             this.ContentNoItem.Visibility = Visibility.Visible;
             this.ContentEditItem.Visibility = Visibility.Collapsed;
-
             listText.Text = NameEmpty;
             imageIcon.Source = null;
             this._refreshing = false;
@@ -166,90 +144,66 @@ public partial class EquipmentPanel : UserControl
 
         if (this._currentItem.Character < 7)
         {
-            var nameString = EquipName.EquipNames[this._currentItem.Character][
-                this._currentItem.Name
-            ];
-
+            var nameString = EquipName.EquipNames[this._currentItem.Character][this._currentItem.Name];
             listText.Text = nameString;
-            imageIcon.Source = this._icons[
-                (this._currentItem.Character * 2) + this._currentItem.Type
-            ];
-
+            imageIcon.Source = this._icons[(this._currentItem.Character * 2) + this._currentItem.Type];
             this.ButtonEquipmentName.Content = nameString;
             this.GroupEquipmentEditor.Header = nameString;
         }
         else
         {
             var nameString = ((Character)this._currentItem.Character).ToString();
-
             listText.Text = $"{NameUnknown} [{nameString}]";
             imageIcon.Source = null;
-
             this.ButtonEquipmentName.Content = NameUnknown;
             this.GroupEquipmentEditor.Header = NameUnknown;
         }
 
-        var appearance = EquipAppearance.EquipAppearances.FirstOrDefault(e =>
-            e.ID == this._currentItem.Appearance
-        );
-        if (appearance == null)
-        {
-            this.ButtonEquipmentAppearance.Content = NameUnknown;
-        }
-        else
-        {
-            this.ButtonEquipmentAppearance.Content = appearance.Name;
-        }
+        var appearance = EquipAppearance.EquipAppearances.FirstOrDefault(e => e.ID == this._currentItem.Appearance);
+        this.ButtonEquipmentAppearance.Content = appearance == null ? NameUnknown : appearance.Name;
+
+        // Display live calculated sell price
+        var sellPrice = Equipment.CalculateSellPrice(this._currentItem);
+        this.TextSellPrice.Text = $"{sellPrice:N0} Gil";
+
+        // Display equipment flags
+        this.CheckFlagCelestial.IsChecked = (this._currentItem.Flags & 0x04) != 0;
+        this.CheckFlagBrotherhood.IsChecked = (this._currentItem.Flags & 0x08) != 0;
+        this.CheckFlagSummon.IsChecked = (this._currentItem.Flags & 0x01) != 0;
+        this.CheckFlagHidden.IsChecked = (this._currentItem.Flags & 0x02) != 0;
 
         this.ComboEquipmentCharacter.SelectedIndex = this._currentItem.Character;
         this.ComboEquipmentType.SelectedIndex = this._currentItem.Type;
 
-        var damageFormula = DamageFormula.DamageFormulas.FirstOrDefault(f =>
-            f.ID == this._currentItem.DamageFormula
-        );
-
-        if (damageFormula == null)
-        {
-            this.ComboDamageFormula.SelectedIndex = 0;
-        }
-        else
-        {
-            this.ComboDamageFormula.SelectedIndex = Array.IndexOf(
-                DamageFormula.DamageFormulas,
-                damageFormula
-            );
-        }
+        var damageFormula = DamageFormula.DamageFormulas.FirstOrDefault(f => f.ID == this._currentItem.DamageFormula);
+        this.ComboDamageFormula.SelectedIndex = damageFormula == null
+            ? 0
+            : Array.IndexOf(DamageFormula.DamageFormulas, damageFormula);
 
         this.TextAttackPower.Text = this._currentItem.AttackPower.ToString();
         this.TextCritChance.Text = this._currentItem.Critical.ToString();
-
-        this.ComboEquipmentSlots.SelectedIndex = this._currentItem.AbilityCount;
+        this.ComboEquipmentSlots.SelectedIndex = Math.Min((int)this._currentItem.AbilityCount, 4);
 
         for (var slot = 0; slot < 4; slot++)
         {
             var button = (Button)this.FindName("Ability" + slot.ToString().Trim());
-
             if (slot >= this._currentItem.AbilityCount)
             {
                 button.Visibility = Visibility.Collapsed;
                 continue;
             }
+
             button.Visibility = Visibility.Visible;
-            var ability = AutoAbility.FromID(this._currentItem.Abilities[slot]);
+            var raw = this._currentItem.Abilities != null && this._currentItem.Abilities.Length > slot
+                ? this._currentItem.Abilities[slot]
+                : (ushort)0xFF;
 
-            if (ability == null)
-            {
-                // no ability in this slot
-                button.Content = NameEmpty;
-                continue;
-            }
-
-            button.Content = ability.Name;
+            var ability = AutoAbility.FromID(raw);
+            button.Content = ability == null ? NameEmpty : ability.Name;
         }
 
         this.ContentNoItem.Visibility = Visibility.Collapsed;
         this.ContentEditItem.Visibility = Visibility.Visible;
-
         this._refreshing = false;
     }
 
@@ -259,8 +213,29 @@ public partial class EquipmentPanel : UserControl
         {
             return;
         }
-
         this._selectedItem = this.ListEquipment.SelectedIndex;
+        this.RefreshSelectedItem();
+    }
+
+    void FlagCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (this._refreshing)
+        {
+            return;
+        }
+
+        byte flags = 0;
+        if (this.CheckFlagSummon.IsChecked == true)
+            flags |= 0x01;
+        if (this.CheckFlagHidden.IsChecked == true)
+            flags |= 0x02;
+        if (this.CheckFlagCelestial.IsChecked == true)
+            flags |= 0x04;
+        if (this.CheckFlagBrotherhood.IsChecked == true)
+            flags |= 0x08;
+
+        this._currentItem.Flags = flags;
+        Equipment.WriteItem(this._selectedItem, this._currentItem);
         this.RefreshSelectedItem();
     }
 
@@ -278,7 +253,6 @@ public partial class EquipmentPanel : UserControl
             {
                 continue;
             }
-
             if (i >= newSlots)
             {
                 abilityButton.Visibility = Visibility.Collapsed;
@@ -290,19 +264,20 @@ public partial class EquipmentPanel : UserControl
             }
         }
 
-        var offset =
-            Equipment.Offset
-            + (this._selectedItem * Equipment.BlockLength)
-            + (int)Marshal.OffsetOf<EquipmentItem>(nameof(EquipmentItem.AbilityCount));
-        GameMemory.Write(offset, (byte)newSlots, false);
-
+        this._currentItem.AbilityCount = (byte)newSlots;
+        Equipment.WriteItem(this._selectedItem, this._currentItem);
         this.RefreshSelectedItem();
     }
 
     void WriteAbility(int itemSlot, int abilitySlot, ushort abilityId)
     {
+        if (this._currentItem.Abilities == null || this._currentItem.Abilities.Length < 4)
+        {
+            this._currentItem.Abilities = new ushort[4];
+        }
         this._currentItem.Abilities[abilitySlot] = abilityId;
         Equipment.WriteItem(itemSlot, this._currentItem);
+        Party.RecalculateStats();
     }
 
     void AbilityButton_Click(object sender, RoutedEventArgs e)
@@ -310,7 +285,6 @@ public partial class EquipmentPanel : UserControl
         var button = sender as Button;
         var index = int.Parse(button.Name.Substring(7));
 
-        // Generate search list
         var searchList = new List<string>();
         foreach (var ability in AutoAbility.AutoAbilities)
         {
@@ -319,7 +293,6 @@ public partial class EquipmentPanel : UserControl
 
         var searchDialog = new SearchDialog(searchList) { Owner = this.TryFindParent<Window>() };
         var searchComplete = searchDialog.ShowDialog();
-
         if (!searchComplete.HasValue || !searchComplete.Value)
         {
             return;
@@ -327,7 +300,6 @@ public partial class EquipmentPanel : UserControl
 
         if (searchDialog.ResultIndex == -1)
         {
-            // Write empty slot
             this.WriteAbility(this._selectedItem, index, 0xFF);
         }
         else
@@ -342,7 +314,6 @@ public partial class EquipmentPanel : UserControl
     void ButtonEquipmentName_OnClick(object sender, RoutedEventArgs e)
     {
         var currentChara = this._currentItem.Character;
-
         if (currentChara > 6)
         {
             currentChara = 0;
@@ -355,27 +326,21 @@ public partial class EquipmentPanel : UserControl
         }
 
         var currentName = this._currentItem.Name;
-
         var nameString = string.Empty;
-
-        if (currentChara < 7)
+        if (currentChara < 7 && currentName < EquipName.EquipNames[currentChara].Length)
         {
             nameString = EquipName.EquipNames[currentChara][currentName];
         }
 
         var searchDialog = new SearchDialog(searchList, nameString, false);
         var searchComplete = searchDialog.ShowDialog();
-
-        if (!searchComplete.Value)
+        if (!searchComplete.HasValue || !searchComplete.Value)
         {
             return;
         }
 
-        var searchIndex = searchDialog.ResultIndex;
-
-        var offset = Equipment.Offset + (this._selectedItem * Equipment.BlockLength);
-        GameMemory.Write(offset, (byte)searchIndex, false);
-
+        this._currentItem.Name = (byte)searchDialog.ResultIndex;
+        Equipment.WriteItem(this._selectedItem, this._currentItem);
         this.RefreshSelectedItem();
     }
 
@@ -385,13 +350,9 @@ public partial class EquipmentPanel : UserControl
         {
             return;
         }
-
-        var offset =
-            Equipment.Offset
-            + (this._selectedItem * Equipment.BlockLength)
-            + (int)Marshal.OffsetOf<EquipmentItem>(nameof(EquipmentItem.Character));
-        GameMemory.Write(offset, (byte)this.ComboEquipmentCharacter.SelectedIndex, false);
-
+        this._currentItem.Character = (byte)this.ComboEquipmentCharacter.SelectedIndex;
+        Equipment.WriteItem(this._selectedItem, this._currentItem);
+        Party.RecalculateStats();
         this.RefreshSelectedItem();
     }
 
@@ -401,25 +362,13 @@ public partial class EquipmentPanel : UserControl
         {
             return;
         }
-
-        var offset =
-            Equipment.Offset
-            + (this._selectedItem * Equipment.BlockLength)
-            + (int)Marshal.OffsetOf<EquipmentItem>(nameof(EquipmentItem.Type));
-        GameMemory.Write(offset, (byte)this.ComboEquipmentType.SelectedIndex, false);
-
+        this._currentItem.Type = (byte)this.ComboEquipmentType.SelectedIndex;
+        Equipment.WriteItem(this._selectedItem, this._currentItem);
         this.RefreshSelectedItem();
     }
 
     void ButtonEquipmentAppearance_OnClick(object sender, RoutedEventArgs e)
     {
-        var currentChara = this._currentItem.Character;
-
-        if (currentChara > 6)
-        {
-            currentChara = 0;
-        }
-
         var searchList = new List<string>();
         for (var n = 0; n < EquipAppearance.EquipAppearances.Length; n++)
         {
@@ -429,51 +378,38 @@ public partial class EquipmentPanel : UserControl
         }
 
         var currentAppearance = this._currentItem.Appearance;
-
         var searchDialog = new SearchDialog(searchList, currentAppearance.ToString("X4"), false);
         var searchComplete = searchDialog.ShowDialog();
-
-        if (!searchComplete.Value)
+        if (!searchComplete.HasValue || !searchComplete.Value)
         {
             return;
         }
 
-        var searchIndex = searchDialog.ResultIndex;
-        var searchItem = EquipAppearance.EquipAppearances[searchIndex];
-
-        var offset =
-            Equipment.Offset
-            + (this._selectedItem * Equipment.BlockLength)
-            + (int)Marshal.OffsetOf<EquipmentItem>(nameof(EquipmentItem.Appearance));
-        GameMemory.Write(offset, (ushort)searchItem.ID, false);
-
+        var searchItem = EquipAppearance.EquipAppearances[searchDialog.ResultIndex];
+        this._currentItem.Appearance = (ushort)searchItem.ID;
+        Equipment.WriteItem(this._selectedItem, this._currentItem);
         this.RefreshSelectedItem();
     }
 
     void ButtonDeleteItem_Click(object sender, RoutedEventArgs e)
     {
-        if (this._selectedItem is >= 0x0C and <= 0x21)
+        if (this._selectedItem < 0x22)
         {
+            Error.Show("Reserved character and story equipment slots (0 - 33) cannot be deleted.");
             return;
         }
 
-        var nameString = string.Empty;
-
-        try
-        {
-            nameString = EquipName.EquipNames[this._currentItem.Character][this._currentItem.Name];
-        }
-        catch
-        {
-            nameString = "This item";
-        }
+        var nameString = this._currentItem.Character < 7 && this._currentItem.Name < EquipName.EquipNames[this._currentItem.Character].Length
+            ? EquipName.EquipNames[this._currentItem.Character][this._currentItem.Name]
+            : "This item";
 
         var confirm = MessageBox.Show(
             $"{nameString} will be permanently deleted!\n\nAre you sure?",
-            "Confirm item deletion",
+            "Confirm Deletion",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning
         );
+
         if (confirm != MessageBoxResult.Yes)
         {
             return;
@@ -481,14 +417,167 @@ public partial class EquipmentPanel : UserControl
 
         var itemEmpty = new EquipmentItem { Abilities = new ushort[4] };
         Equipment.WriteItem(this._selectedItem, itemEmpty);
-        this.RefreshSelectedItem();
+        this.Refresh();
+    }
+
+    void ButtonSellItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (!GameMemory.IsAttached)
+        {
+            return;
+        }
+
+        if (this._selectedItem < 0x22)
+        {
+            Error.Show("Reserved character and story equipment slots (0 - 33) cannot be sold.");
+            return;
+        }
+
+        if (this._currentItem.SlotOccupied == 0)
+        {
+            return;
+        }
+
+        var equippedSlots = Equipment.GetEquippedSlots();
+        if (equippedSlots.Contains(this._selectedItem) || (this._currentItem.EquippedBy & 0xFF) != 0xFF)
+        {
+            Error.Show("This equipment is currently equipped by a character or aeon and cannot be sold.");
+            return;
+        }
+
+        if ((this._currentItem.Flags & 0x0F) != 0)
+        {
+            Error.Show("Celestial, Brotherhood, Summon, or Hidden equipment cannot be sold.");
+            return;
+        }
+
+        var price = Equipment.CalculateSellPrice(this._currentItem);
+        var nameString = this._currentItem.Character < 7 && this._currentItem.Name < EquipName.EquipNames[this._currentItem.Character].Length
+            ? EquipName.EquipNames[this._currentItem.Character][this._currentItem.Name]
+            : "This item";
+
+        var confirm = MessageBox.Show(
+            $"Sell {nameString} for {price:N0} Gil?",
+            "Confirm Sale",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question
+        );
+
+        if (confirm != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var newGil = Math.Min((long)General.CurrentGil + price, 999999999L);
+        General.CurrentGil = (int)newGil;
+
+        var emptyItem = new EquipmentItem { Abilities = new ushort[4] };
+        Equipment.WriteItem(this._selectedItem, emptyItem);
+
+        this.Refresh();
+    }
+
+    void ButtonBulkSell_Click(object sender, RoutedEventArgs e)
+    {
+        if (!GameMemory.IsAttached)
+        {
+            return;
+        }
+
+        var preserve4Slots = this.CheckPreserve4Slots.IsChecked == true;
+        var preserveRares = this.CheckPreserveRareAbilities.IsChecked == true;
+
+        var equippedSlots = Equipment.GetEquippedSlots();
+        var allItems = Equipment.ReadItems();
+
+        var candidates = new List<int>();
+        var totalGain = 0L;
+
+        for (var i = 0x22; i < Equipment.MaxItems; i++)
+        {
+            var item = allItems[i];
+            if (item.SlotOccupied == 0)
+            {
+                continue;
+            }
+
+            // Must not be equipped
+            if (equippedSlots.Contains(i) || (item.EquippedBy & 0xFF) != 0xFF)
+            {
+                continue;
+            }
+
+            // Must not have special flags (Celestial, Brotherhood, Summon, Hidden)
+            if ((item.Flags & 0x0F) != 0)
+            {
+                continue;
+            }
+
+            // Optional filter: Keep 4-slot gear
+            if (preserve4Slots && item.AbilityCount == 4)
+            {
+                continue;
+            }
+
+            // Optional filter: Keep rare abilities
+            if (preserveRares && Equipment.HasRareAbilities(item))
+            {
+                continue;
+            }
+
+            candidates.Add(i);
+            totalGain += Equipment.CalculateSellPrice(item);
+        }
+
+        if (candidates.Count == 0)
+        {
+            MessageBox.Show(
+                "No eligible un-equipped equipment found for bulk sale.\n(Equipped, Celestial, story, and filtered items are always preserved).",
+                "Bulk Sell",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
+            return;
+        }
+
+        var prompt = MessageBox.Show(
+            $"Found {candidates.Count} un-equipped items matching safety criteria.\n"
+                + $"Total estimated proceeds: {totalGain:N0} Gil.\n\n"
+                + "Do you want to sell these items now?",
+            "Confirm Bulk Sell",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question
+        );
+
+        if (prompt != MessageBoxResult.Yes)
+        {
+            return;
+        }
+
+        var emptyItem = new EquipmentItem { Abilities = new ushort[4] };
+        foreach (var slot in candidates)
+        {
+            Equipment.WriteItem(slot, emptyItem);
+        }
+
+        var finalGil = Math.Min((long)General.CurrentGil + totalGain, 999999999L);
+        General.CurrentGil = (int)finalGil;
+
+        this.Refresh();
+        MessageBox.Show(
+            $"Successfully sold {candidates.Count} items for {totalGain:N0} Gil!\nNew Gil balance: {General.CurrentGil:N0}",
+            "Bulk Sell Completed",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information
+        );
     }
 
     void ButtonCreateNew_Click(object sender, RoutedEventArgs e)
     {
-        var itemEmpty = new EquipmentItem
+        var itemNew = new EquipmentItem
         {
             SlotOccupied = 0x01,
+            Flags = 0x00,
             Appearance = 0x4002,
             Name = 0x11,
             Abilities = [0xFF, 0xFF, 0xFF, 0xFF],
@@ -498,8 +587,8 @@ public partial class EquipmentPanel : UserControl
             Critical = 3,
             EquippedBy = 0xFF,
         };
-        Equipment.WriteItem(this._selectedItem, itemEmpty);
-        this.RefreshSelectedItem();
+        Equipment.WriteItem(this._selectedItem, itemNew);
+        this.Refresh();
     }
 
     void ComboDamageFormula_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -508,7 +597,6 @@ public partial class EquipmentPanel : UserControl
         {
             return;
         }
-
         var formula = DamageFormula.DamageFormulas[this.ComboDamageFormula.SelectedIndex];
         this._currentItem.DamageFormula = (byte)formula.ID;
         Equipment.WriteItem(this._selectedItem, this._currentItem);
@@ -521,11 +609,11 @@ public partial class EquipmentPanel : UserControl
         {
             return;
         }
-
         try
         {
             this._currentItem.AttackPower = byte.Parse(this.TextAttackPower.Text);
             Equipment.WriteItem(this._selectedItem, this._currentItem);
+            this.TextAttackPower.SelectAll();
         }
         catch
         {
@@ -539,11 +627,11 @@ public partial class EquipmentPanel : UserControl
         {
             return;
         }
-
         try
         {
             this._currentItem.Critical = byte.Parse(this.TextCritChance.Text);
             Equipment.WriteItem(this._selectedItem, this._currentItem);
+            this.TextCritChance.SelectAll();
         }
         catch
         {

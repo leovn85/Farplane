@@ -1,13 +1,10 @@
-﻿//css_reference "..\bin\Debug\farplane.exe";
 using System;
-using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using Farplane;
 using Farplane.Common;
 using Farplane.FarplaneMod;
-using Farplane.FFX;
 using Farplane.FFX.Data;
 using Farplane.FFX.Values;
 using Farplane.Memory;
@@ -17,17 +14,19 @@ public class SeymourMod : IFarplaneMod
 {
     private bool _modActive = false;
 
-    private static int _offsetModBytes1 = 0x4A8F47;
-    private static int _offsetModBytes2 = 0x4A8F9A;
-    private static int _offsetPartyList = Offsets.GetOffset(OffsetType.PartyList);
+    private static int OffsetModBytes1 => OffsetScanner.GetOffset(GameOffset.FFX_SeymourMenuCheck1);
+    private static int OffsetModBytes2 => OffsetScanner.GetOffset(GameOffset.FFX_SeymourMenuCheck2);
 
-    private static int offsetSeymourData =
-        Offsets.GetOffset(OffsetType.PartyStatsBase) + 7 * StructHelper.GetSize<PartyMember>();
-    private static int offsetInParty = StructHelper.GetFieldOffset<PartyMember>(
-        nameof(PartyMember.InParty)
-    );
-    private static int offsetSeymourInParty = offsetSeymourData + offsetInParty;
-    private static int updateTicks = 0;
+    private static int OffsetSeymourData =>
+        OffsetScanner.GetOffset(GameOffset.FFX_PartyStatBase) + (7 * StructHelper.GetSize<PartyMember>());
+
+    private static int OffsetSeymourInParty =>
+        OffsetSeymourData + StructHelper.GetFieldOffset<PartyMember>(nameof(PartyMember.InParty));
+
+    private byte[] _origBytes1;
+    private byte[] _origBytes2;
+
+    private static readonly byte[] NopBytes4 = [0x90, 0x90, 0x90, 0x90];
 
     public void Configure(object parentWindow)
     {
@@ -59,110 +58,65 @@ public class SeymourMod : IFarplaneMod
         win.ShowDialog();
     }
 
-    public string ConfigButton
-    {
-        get { return "Configure"; }
-    }
-    public bool AutoActivate
-    {
-        get { return true; }
-    }
-    private static byte[] _modBytes = GameMemory.Assembly.Generate(
-        new[] { "nop", "nop", "nop", "nop" }
-    );
+    public string ConfigButton => "Configure";
+    public bool AutoActivate => true;
+    public string Name => "Seymour in Party";
+    public string Author => "Topher";
+    public string Description => "Adds Seymour to your party and enables him in the menu.";
+    public GameType GameType => GameType.FFX;
 
-    private static byte[] _originalBytes1 = GameMemory.Assembly.Generate(
-        new[] { "cmp al,07", "je 0x4A8F6F" },
-        _offsetModBytes1
-    );
-
-    private static byte[] _originalBytes2 = GameMemory.Assembly.Generate(
-        new[] { "cmp al,07", "je 0x4A8FBC" },
-        _offsetModBytes2
-    );
-
-    public string Name
-    {
-        get { return "Seymour in Party"; }
-    }
-
-    public string Author
-    {
-        get { return "Topher"; }
-    }
-
-    public string Description
-    {
-        get { return "Adds Seymour to your party and enables him in the menu."; }
-    }
-
-    public GameType GameType
-    {
-        get { return GameType.FFX; }
-    }
-
-    public ModState GetState()
-    {
-        if (_modActive)
-            return ModState.Activated;
-        return ModState.Deactivated;
-    }
-
-    public static bool ValidateBytes()
-    {
-        var codeBytes1 = GameMemory.Read<byte>(_offsetModBytes1, _originalBytes1.Length);
-        var codeBytes2 = GameMemory.Read<byte>(_offsetModBytes2, _originalBytes2.Length);
-
-        if (
-            (codeBytes1.SequenceEqual(_originalBytes1) && codeBytes2.SequenceEqual(_originalBytes2))
-            || (codeBytes1.SequenceEqual(_modBytes) && codeBytes2.SequenceEqual(_modBytes))
-        )
-            return true;
-        ModLogger.WriteLine("Unexpected assembly code, aborting code write.");
-        return false;
-    }
+    public ModState GetState() => _modActive ? ModState.Activated : ModState.Deactivated;
 
     public void Activate()
     {
-        if (_modActive)
+        if (_modActive || !GameMemory.IsAttached)
             return;
 
-        _modActive = true;
+        var addr1 = OffsetModBytes1;
+        var addr2 = OffsetModBytes2;
 
-        if (ValidateBytes())
-        {
-            GameMemory.Write<byte>(_offsetModBytes1, _modBytes);
-            GameMemory.Write<byte>(_offsetModBytes2, _modBytes);
-        }
+        if (addr1 == 0 || addr2 == 0)
+            return;
+
+        if (_origBytes1 == null)
+            _origBytes1 = GameMemory.Read<byte>(addr1, 4, isRelative: false);
+        if (_origBytes2 == null)
+            _origBytes2 = GameMemory.Read<byte>(addr2, 4, isRelative: false);
+
+        // NOP 4 bytes of "cmp al, 7; jz ..." (3C 07 74 24)
+        GameMemory.Write(addr1, NopBytes4, isRelative: false);
+        GameMemory.Write(addr2, NopBytes4, isRelative: false);
 
         if (ModSettings.ReadSetting<bool>("AutoAddRemove"))
         {
             Party.AddCharacter(Character.Seymour);
-            GameMemory.Write<byte>(offsetSeymourInParty, 17);
+            GameMemory.Write(OffsetSeymourInParty, (byte)17, isRelative: false);
         }
+
+        _modActive = true;
     }
 
     public void Deactivate()
     {
-        if (!_modActive)
+        if (!_modActive || !GameMemory.IsAttached)
             return;
 
-        _modActive = false;
+        var addr1 = OffsetModBytes1;
+        var addr2 = OffsetModBytes2;
 
-        if (ValidateBytes())
-        {
-            GameMemory.Write<byte>(_offsetModBytes1, _originalBytes1);
-            GameMemory.Write<byte>(_offsetModBytes2, _originalBytes2);
-        }
+        if (_origBytes1 != null && addr1 != 0)
+            GameMemory.Write(addr1, _origBytes1, isRelative: false);
+        if (_origBytes2 != null && addr2 != 0)
+            GameMemory.Write(addr2, _origBytes2, isRelative: false);
+
         if (ModSettings.ReadSetting<bool>("AutoAddRemove"))
         {
             Party.RemoveCharacter(Character.Seymour);
-            GameMemory.Write<byte>(offsetSeymourInParty, 16);
+            GameMemory.Write(OffsetSeymourInParty, (byte)16, isRelative: false);
         }
+
+        _modActive = false;
     }
 
-    public void Update()
-    {
-        // No update logic for this mod
-    }
+    public void Update() { }
 }

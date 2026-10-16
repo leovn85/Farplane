@@ -1,59 +1,80 @@
-﻿<UserControl
+<UserControl
     x:Class="Farplane.FFX.EditorPanels.MonsterArenaPanel.MonsterArenaPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="480"
-    d:DesignWidth="480"
+    d:DesignHeight="520"
+    d:DesignWidth="500"
     mc:Ignorable="d"
 >
     <GroupBox Header="Monster Arena">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="150" />
-                <ColumnDefinition />
+                <ColumnDefinition Width="160" />
+                <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <TreeView
                 Name="ListMonsterArenaAreas"
+                Grid.Column="0"
                 SelectedItemChanged="ListMonsterArenaAreas_OnSelectedItemChanged"
             />
-            <StackPanel Grid.Column="1">
-                <GroupBox Name="GroupMonsters" Grid.Column="1" Header="Monsters">
+            <StackPanel Grid.Column="1" Margin="4,0,0,0">
+                <GroupBox Name="GroupMonsters" Header="Monsters">
                     <Grid Name="GridMonsterArenaMonsters">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="40" />
-                            <RowDefinition Height="40" />
-                            <RowDefinition Height="40" />
-                            <RowDefinition Height="40" />
-                            <RowDefinition Height="40" />
-                            <RowDefinition Height="40" />
-                            <RowDefinition Height="40" />
-                            <RowDefinition />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="36" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                     </Grid>
                 </GroupBox>
-                <GroupBox Header="Boosters">
+                <GroupBox Header="Arena Boosters" Margin="0,4,0,0">
                     <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition />
-                            <ColumnDefinition />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Button
+                            Grid.Row="0"
                             Grid.Column="0"
-                            Margin="5"
+                            Margin="3"
                             Click="ButtonCaptureAll_Click"
-                            Content="Capture all monsters"
+                            Content="Capture all (10)"
                         />
                         <Button
+                            Grid.Row="0"
                             Grid.Column="1"
-                            Margin="5"
+                            Margin="3"
                             Click="ButtonReleaseAll_Click"
-                            Content="Release all monsters"
+                            Content="Release all (0)"
+                        />
+                        <Button
+                            Grid.Row="1"
+                            Grid.Column="0"
+                            Margin="3"
+                            Click="ButtonUnlockAllCreations_Click"
+                            Content="Unlock all Creations"
+                        />
+                        <Button
+                            Grid.Row="1"
+                            Grid.Column="1"
+                            Margin="3"
+                            Click="ButtonLockAllCreations_Click"
+                            Content="Lock all Creations"
                         />
                     </Grid>
                 </GroupBox>

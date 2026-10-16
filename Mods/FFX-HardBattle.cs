@@ -1,8 +1,3 @@
-﻿//css_reference "D:\Dev\Farplane\Farplane\bin\Debug\Farplane.exe";
-using System;
-using System.Linq;
-using System.Threading;
-using System.Windows;
 using Farplane;
 using Farplane.Common;
 using Farplane.FarplaneMod;
@@ -10,53 +5,30 @@ using Farplane.FFX;
 using Farplane.FFX.Data;
 using Farplane.FFX.Values;
 using Farplane.Memory;
+using System;
+using System.ComponentModel;
+using System.Linq;
 
 public class FFXHardBattleMod : IFarplaneMod
 {
     private bool _modActive = false;
-    private static int _offsetEnemyPointer = Offsets.GetOffset(OffsetType.BattleEnemyPointer);
-    private static int _sizeBattleEntity = StructHelper.GetSize<BattleEntityData>();
+    private static int OffsetEnemyPointer => Offsets.GetOffset(OffsetType.BattleEnemyPointer);
+    private static readonly int SizeBattleEntity = StructHelper.GetSize<BattleEntityData>();
     private static bool changedThisBattle;
     private static bool[] changedCreature;
+
     public int m_HpMpMultiplier = 10;
     public int m_StatMultiplier = 3;
 
     public void Configure(object parentWindow) { }
+    public string ConfigButton => null;
+    public bool AutoActivate => true;
+    public string Name => "Harder Battles";
+    public string Author => "Topher";
+    public string Description => "Multiplies enemy stats at the start of every battle.";
+    public GameType GameType => GameType.FFX;
 
-    public string ConfigButton
-    {
-        get { return null; }
-    }
-    public bool AutoActivate
-    {
-        get { return true; }
-    }
-    public string Name
-    {
-        get { return "Harder Battles"; }
-    }
-
-    public string Author
-    {
-        get { return "Topher"; }
-    }
-
-    public string Description
-    {
-        get { return "Multiplies enemy stats at the start of every battle."; }
-    }
-
-    public GameType GameType
-    {
-        get { return GameType.FFX; }
-    }
-
-    public ModState GetState()
-    {
-        if (_modActive)
-            return ModState.Activated;
-        return ModState.Deactivated;
-    }
+    public ModState GetState() => _modActive ? ModState.Activated : ModState.Deactivated;
 
     public void Activate()
     {
@@ -76,13 +48,11 @@ public class FFXHardBattleMod : IFarplaneMod
 
     public void Update()
     {
-        if (!_modActive)
+        if (!_modActive || !GameMemory.IsAttached)
             return;
 
-        // Read battle pointer from memory
-        var battlePointer = GameMemory.Read<IntPtr>(_offsetEnemyPointer);
+        var battlePointer = GameMemory.Read<IntPtr>(OffsetEnemyPointer);
 
-        // Check if we need to reset battle
         if (battlePointer == IntPtr.Zero && changedCreature != null)
         {
             changedThisBattle = false;
@@ -93,169 +63,55 @@ public class FFXHardBattleMod : IFarplaneMod
         {
             ModLogger.WriteLine("Battle detected, modifying enemies");
             changedCreature = new bool[8];
-
-            // Loop until all creatures are modified or limit is hit
-            var loopLimit = 2000; // maximum times to attempt modification before giving up
+            var loopLimit = 2000;
 
             while (changedCreature.Contains(false) && loopLimit > 0)
             {
                 loopLimit--;
-                for (int i = 0; i < 8; i++)
+                for (var i = 0; i < 8; i++)
                 {
                     if (changedCreature[i])
-                        continue; // Enemy already modified
-
-                    var entityData = Battle.GetEnemyEntity(i);
-                    var entityName = StringConverter.ToString(entityData.text_name);
-                    int entityOffset = (int)battlePointer + _sizeBattleEntity * i;
-
-                    if (entityData.guid == 0) // No enemy in this slot
                         continue;
 
+                    var entityData = Battle.GetEnemyEntity(i);
+                    var entityOffset = (int)battlePointer + (SizeBattleEntity * i);
+                    if (entityData.pointer_1 == 0)
+                        continue;
+
+                    var entityName = StringConverter.ToASCII(entityData.text_name);
                     ModLogger.WriteLine("Modifying creature: {0}", entityName);
 
-                    var newHP = entityData.hp_max * m_HpMpMultiplier;
+                    var newHP = (long)entityData.hp_max * m_HpMpMultiplier;
                     newHP = newHP > int.MaxValue ? int.MaxValue : newHP;
 
-                    var newMP = entityData.mp_max * m_HpMpMultiplier;
+                    var newMP = (long)entityData.mp_max * m_HpMpMultiplier;
                     newMP = newMP > int.MaxValue ? int.MaxValue : newMP;
 
-                    var newStrength = entityData.strength * m_StatMultiplier;
-                    newStrength = newStrength > byte.MaxValue ? byte.MaxValue : newStrength;
-                    var newDefense = entityData.defense * m_StatMultiplier;
-                    newDefense = newDefense > byte.MaxValue ? byte.MaxValue : newDefense;
-                    var newMagic = entityData.magic * m_StatMultiplier;
-                    newMagic = newMagic > byte.MaxValue ? byte.MaxValue : newMagic;
-                    var newMagicDef = entityData.magic_defense * m_StatMultiplier;
-                    newMagicDef = newMagicDef > byte.MaxValue ? byte.MaxValue : newMagicDef;
-                    var newAgility = entityData.agility * m_StatMultiplier;
-                    newAgility = newAgility > byte.MaxValue ? byte.MaxValue : newAgility;
-                    var newLuck = entityData.luck * m_StatMultiplier;
-                    newLuck = newLuck > byte.MaxValue ? byte.MaxValue : newLuck;
-                    var newAccuracy = entityData.accuracy * m_StatMultiplier;
-                    newAccuracy = newAccuracy > byte.MaxValue ? byte.MaxValue : newAccuracy;
-                    var newEvasion = entityData.evasion * m_StatMultiplier;
-                    newEvasion = newEvasion > byte.MaxValue ? byte.MaxValue : newEvasion;
+                    var newStrength = Math.Min(byte.MaxValue, entityData.strength * m_StatMultiplier);
+                    var newDefense = Math.Min(byte.MaxValue, entityData.defense * m_StatMultiplier);
+                    var newMagic = Math.Min(byte.MaxValue, entityData.magic * m_StatMultiplier);
+                    var newMagicDef = Math.Min(byte.MaxValue, entityData.magic_defense * m_StatMultiplier);
+                    var newAgility = Math.Min(byte.MaxValue, entityData.agility * m_StatMultiplier);
+                    var newLuck = Math.Min(byte.MaxValue, entityData.luck * m_StatMultiplier);
+                    var newAccuracy = Math.Min(byte.MaxValue, entityData.accuracy * m_StatMultiplier);
+                    var newEvasion = Math.Min(byte.MaxValue, entityData.evasion * m_StatMultiplier);
 
-                    // update entity values
-                    GameMemory.Write<int>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.hp_current)
-                            ),
-                        newHP,
-                        false
-                    );
+                    // Write stats with isRelative: false as entityOffset is an absolute pointer
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.hp_current)), (int)newHP, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.hp_max)), (int)newHP, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.hp_max2)), (int)newHP, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.mp_current)), (int)newMP, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.mp_max)), (int)newMP, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.mp_max2)), (int)newMP, false);
 
-                    GameMemory.Write<int>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.hp_max)
-                            ),
-                        newHP,
-                        false
-                    );
-
-                    GameMemory.Write<int>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.hp_max2)
-                            ),
-                        newHP,
-                        false
-                    );
-
-                    GameMemory.Write<int>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.mp_current)
-                            ),
-                        newMP,
-                        false
-                    );
-
-                    GameMemory.Write<int>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.mp_max)
-                            ),
-                        newMP,
-                        false
-                    );
-
-                    GameMemory.Write<int>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.mp_max2)
-                            ),
-                        newMP,
-                        false
-                    );
-
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.strength)
-                            ),
-                        (byte)newStrength,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.defense)
-                            ),
-                        (byte)newDefense,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.magic)
-                            ),
-                        (byte)newMagic,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.magic_defense)
-                            ),
-                        (byte)newMagicDef,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.agility)
-                            ),
-                        (byte)newAgility,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.luck)
-                            ),
-                        (byte)newLuck,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.accuracy)
-                            ),
-                        (byte)newAccuracy,
-                        false
-                    );
-                    GameMemory.Write<byte>(
-                        entityOffset
-                            + StructHelper.GetFieldOffset<BattleEntityData>(
-                                nameof(BattleEntityData.evasion)
-                            ),
-                        (byte)newEvasion,
-                        false
-                    );
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.strength)), (byte)newStrength, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.defense)), (byte)newDefense, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.magic)), (byte)newMagic, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.magic_defense)), (byte)newMagicDef, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.agility)), (byte)newAgility, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.luck)), (byte)newLuck, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.accuracy)), (byte)newAccuracy, false);
+                    GameMemory.Write(entityOffset + StructHelper.GetFieldOffset<BattleEntityData>(nameof(BattleEntityData.evasion)), (byte)newEvasion, false);
 
                     changedCreature[i] = true;
                 }

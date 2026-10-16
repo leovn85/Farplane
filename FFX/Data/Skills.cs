@@ -1,65 +1,65 @@
 using System.Collections.Generic;
-using Farplane.Memory;
 
 namespace Farplane.FFX.Data;
 
 public static class Skills
 {
-    static int _offsetSkillTable =>
-        GameMemory.Read<int>(OffsetScanner.GetOffset(GameOffset.FFX_SkillTablePointer), false);
+    static KernelTable _commandTable;
+    static KernelTable _itemTable;
 
-    static KernelTable _skillTable;
-
-    static void LoadTable()
+    public static KernelTable GetTable(KernelType type)
     {
-        var tableOffset = _offsetSkillTable;
-        if (tableOffset != 0)
+        if (type == KernelType.Command)
         {
-            _skillTable = new KernelTable(tableOffset);
+            _commandTable ??= new KernelTable(KernelType.Command);
+            return _commandTable;
         }
+
+        _itemTable ??= new KernelTable(KernelType.Item);
+        return _itemTable;
     }
 
-    public static List<string> GetSkillNames()
+    public static void Reset()
     {
-        LoadTable();
+        _commandTable = null;
+        _itemTable = null;
+    }
+
+    public static List<string> GetNames(KernelType type = KernelType.Command)
+    {
+        var table = GetTable(type);
         var names = new List<string>();
-        if (_skillTable == null)
+
+        if (table == null || table.BufferAddress == 0)
         {
             return names;
         }
 
-        for (var i = 0; i < _skillTable.BlockCount; i++)
+        for (var i = 0; i < table.EntryCount; i++)
         {
-            var skillName = _skillTable.GetString1(i);
-            names.Add(skillName);
+            names.Add(table.GetName(i));
         }
+
         return names;
     }
 
-    public static string GetSkillName(int skillIndex)
+    public static string GetSkillName(int index, KernelType type = KernelType.Command)
     {
-        if (_skillTable == null)
-        {
-            LoadTable();
-        }
-        return _skillTable?.GetString1(skillIndex) ?? string.Empty;
+        return GetTable(type)?.GetName(index) ?? string.Empty;
     }
 
-    public static string GetSkillDescription(int skillIndex)
+    public static string GetSkillDescription(int index, KernelType type = KernelType.Command)
     {
-        if (_skillTable == null)
-        {
-            LoadTable();
-        }
-        return _skillTable?.GetString2(skillIndex) ?? string.Empty;
+        return GetTable(type)?.GetDescription(index) ?? string.Empty;
     }
-}
 
-public struct SkillData
-{
-    public ushort unknown_1;
-    public ushort unknown_2;
-    public ushort unknown_3;
-    public ushort Animation1;
-    public ushort Animation2;
+    public static KernelCommandData ReadData(int index, KernelType type = KernelType.Command)
+    {
+        return GetTable(type)?.ReadCommandData(index) ?? default;
+    }
+
+    public static void WriteData(int index, KernelCommandData data, KernelType type = KernelType.Command)
+    {
+        GetTable(type)?.WriteCommandData(index, data);
+    }
 }

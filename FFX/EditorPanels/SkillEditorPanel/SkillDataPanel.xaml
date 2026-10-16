@@ -1,13 +1,162 @@
-﻿<UserControl
+<UserControl
     x:Class="Farplane.FFX.EditorPanels.SkillEditorPanel.SkillDataPanel"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="clr-namespace:Farplane.FFX.EditorPanels.SkillEditorPanel"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    d:DesignHeight="300"
-    d:DesignWidth="300"
+    d:DesignHeight="560"
+    d:DesignWidth="360"
     mc:Ignorable="d"
 >
-    <Grid />
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="2">
+            <!-- Combat Values & Formula -->
+            <GroupBox Header="Action Parameters">
+                <StackPanel Margin="2">
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">MP Cost</TextBlock>
+                        <TextBox Name="TextCostMp" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Overdrive Cost</TextBlock>
+                        <TextBox Name="TextCostOverdrive" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Move Rank (1 - 10)</TextBlock>
+                        <TextBox Name="TextMoveRank" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Attack Power</TextBlock>
+                        <TextBox Name="TextAttackPower" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Accuracy (%)</TextBlock>
+                        <TextBox Name="TextAttackAccuracy" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Hit Count (1 - 16)</TextBlock>
+                        <TextBox Name="TextHitCount" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Crit Bonus (%)</TextBlock>
+                        <TextBox Name="TextCritBonus" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Shatter Chance</TextBlock>
+                        <TextBox Name="TextShatterChance" Width="55" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Damage Formula</TextBlock>
+                        <ComboBox Name="ComboDamageFormula" Width="150" HorizontalAlignment="Right" />
+                    </DockPanel>
+                    <DockPanel Margin="2">
+                        <TextBlock VerticalAlignment="Center">Character User</TextBlock>
+                        <ComboBox Name="ComboCharacterUser" Width="150" HorizontalAlignment="Right" />
+                    </DockPanel>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Target & Attack Flags -->
+            <GroupBox Header="Target &amp; Type Flags" Margin="0,4,0,0">
+                <WrapPanel Margin="2">
+                    <CheckBox Name="CheckTargetEnabled" Content="Target Enabled" Margin="4,2" />
+                    <CheckBox Name="CheckTargetEnemies" Content="Target Enemies" Margin="4,2" />
+                    <CheckBox Name="CheckTargetMulti" Content="Multi-Target" Margin="4,2" />
+                    <CheckBox Name="CheckTargetSelfOnly" Content="Self Only" Margin="4,2" />
+                    <CheckBox Name="CheckTargetEitherTeam" Content="Either Team" Margin="4,2" />
+                    <CheckBox Name="CheckTargetDead" Content="Dead Targets" Margin="4,2" />
+                    <CheckBox Name="CheckTargetLongRange" Content="Long Range" Margin="4,2" />
+                    <CheckBox Name="CheckDmgPhysical" Content="Physical" Margin="4,2" />
+                    <CheckBox Name="CheckDmgMagical" Content="Magical" Margin="4,2" />
+                    <CheckBox Name="CheckDmgCanCrit" Content="Can Crit" Margin="4,2" />
+                    <CheckBox Name="CheckDmgHeals" Content="Heals" Margin="4,2" />
+                    <CheckBox Name="CheckDmgCleanses" Content="Cleanses" Margin="4,2" />
+                    <CheckBox Name="CheckDmgBreaksLimit" Content="Break Dmg Limit" Margin="4,2" />
+                </WrapPanel>
+            </GroupBox>
+
+            <!-- Element Flags -->
+            <GroupBox Header="Element Flags" Margin="0,4,0,0">
+                <WrapPanel Margin="2">
+                    <CheckBox Name="CheckElemFire" Content="Fire" Margin="6,2" />
+                    <CheckBox Name="CheckElemBlizzard" Content="Blizzard" Margin="6,2" />
+                    <CheckBox Name="CheckElemThunder" Content="Thunder" Margin="6,2" />
+                    <CheckBox Name="CheckElemWater" Content="Water" Margin="6,2" />
+                    <CheckBox Name="CheckElemHoly" Content="Holy" Margin="6,2" />
+                </WrapPanel>
+            </GroupBox>
+
+            <!-- Status Chances (%) -->
+            <GroupBox Header="Status Infliction Chance (%)" Margin="0,4,0,0">
+                <Grid Margin="2">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,2,0">
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Death</TextBlock>
+                            <TextBox Name="TextStatusDeath" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Zombie</TextBlock>
+                            <TextBox Name="TextStatusZombie" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Petrify</TextBlock>
+                            <TextBox Name="TextStatusPetrify" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Poison</TextBlock>
+                            <TextBox Name="TextStatusPoison" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Power Break</TextBlock>
+                            <TextBox Name="TextStatusPowerBreak" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Armor Break</TextBlock>
+                            <TextBox Name="TextStatusArmorBreak" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="2,0,0,0">
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Magic Break</TextBlock>
+                            <TextBox Name="TextStatusMagicBreak" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Mental Break</TextBlock>
+                            <TextBox Name="TextStatusMentalBreak" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Sleep</TextBlock>
+                            <TextBox Name="TextStatusSleep" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Silence</TextBlock>
+                            <TextBox Name="TextStatusSilence" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Darkness</TextBlock>
+                            <TextBox Name="TextStatusDarkness" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                        <DockPanel Margin="1">
+                            <TextBlock VerticalAlignment="Center">Slow</TextBlock>
+                            <TextBox Name="TextStatusSlow" Width="36" HorizontalAlignment="Right" />
+                        </DockPanel>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+
+            <!-- Action Controls -->
+            <Grid Margin="0,6,0,4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Button Grid.Column="0" Margin="2" Content="Save to RAM" Click="ButtonSave_Click" />
+                <Button Grid.Column="1" Margin="2" Content="Revert" Click="ButtonRevert_Click" />
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
 </UserControl>

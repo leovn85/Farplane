@@ -1,4 +1,4 @@
-﻿<metro:MetroWindow
+<metro:MetroWindow
     x:Class="Farplane.FFX.FFXEditor"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -8,13 +8,13 @@
     xmlns:metro="clr-namespace:MahApps.Metro.Controls;assembly=MahApps.Metro"
     Name="FFX"
     Title="Farplane Editor - Final Fantasy X"
-    Width="700"
-    Height="620"
+    Width="1280"
+    Height="960"
     AllowsTransparency="False"
     BorderThickness="0"
     GlowBrush="Black"
     Icon="/Farplane;component/Resources/Farplane_Icon.ico"
-    ResizeMode="CanMinimize"
+    ResizeMode="CanResize"
     ShowSystemMenuOnRightClick="False"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d"
@@ -85,7 +85,7 @@
             <TreeViewItem Name="BattleEditor" Header="Battle" />
             <TreeViewItem Name="MonsterArenaEditor" Header="Monster Arena" />
             <TreeViewItem Name="BlitzballEditor" Header="Blitzball" />
-            <TreeViewItem Name="SkillEditor" Header="Skills" Visibility="Collapsed" />
+            <TreeViewItem Name="SkillEditor" Header="Skills" />
             <TreeViewItem Name="DebugEditor" Header="Debug Options" />
             <TreeViewItem Name="Boosters" Header="Boosters" />
         </TreeView>

@@ -5,318 +5,92 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:Farplane.FFX.EditorPanels.Debug"
+    mc:Ignorable="d"
+    d:DesignHeight="600"
+    d:DesignWidth="600"
 >
     <GroupBox Header="Debug Options">
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition />
-            </Grid.ColumnDefinitions>
-            <StackPanel Name="StackDebugOptions" Grid.Column="0">
-                <CheckBox
-                    Name="CheckEnemyInvincible"
-                    Content="Enemies invincible"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckPartyInvincible"
-                    Content="Allies invincible"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckEnemyControl"
-                    Content="Control enemies"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckGamepadCamera"
-                    Content="Control camera with gamepad"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckDisableAttackAnimation"
-                    Content="Disable attack animation"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckUnlimitedMp"
-                    Content="Unlimited MP"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckDisableRandomDamage"
-                    Content="Disable random damage"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckDisableCriticalHit"
-                    Content="Disable critical hit"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckOverdriveAlways"
-                    Content="Overdrive always available"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckAlwaysCritical"
-                    Content="Always critical hit"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckAlwaysDeal1"
-                    Content="Everything hits for 1"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckAlwaysDeal10000"
-                    Content="Everything hits for 10000"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckAlwaysDeal99999"
-                    Content="Everything hits for 99999"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckAlwaysRareDrop"
-                    Content="Always rare drop and steal"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckBattleAPx100"
-                    Content="Battle AP x100"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckBattleGilx100"
-                    Content="Battle gil x100"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckDisableOverkill"
-                    Content="Disable overkill"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckSensorEnabled"
-                    Content="Sensor always enabled"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckDisplayBattlefieldGrid"
-                    Content="Display battlefield grid"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckPlayerAlways1Hp"
-                    Content="Allies always 1 HP"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckEnemyAlways1Hp"
-                    Content="Enemies always 1 HP"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckNegateAbility"
-                    Content="Negate ability"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckBattleBehaviour"
-                    Content="Battle behaviour"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Name="CheckShowUnknownFlags"
-                    Content="Shown unknown flags (Warning!)"
-                    Margin="2,7,2,2"
-                    Checked="CheckShowUnknownFlags_OnChecked"
-                    Unchecked="CheckShowUnknownFlags_OnChecked"
-                />
-                <TextBlock
-                    Name="TextUnknownWarning"
-                    Margin="5"
-                    TextWrapping="Wrap"
-                    Visibility="Collapsed"
-                    >Unknown flags may crash your game or cause glitches. If you find out what a flag does, please include the Farplane version number when making a report.</TextBlock
-                >
-            </StackPanel>
-            <StackPanel Name="StackUnknown" Grid.Column="1" Visibility="Hidden">
-                <CheckBox
-                    Content="Unknown 1"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 2"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 3"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 4"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 5"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 6"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 7"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 8"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 9"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 10"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 11"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 12"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 13"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 14"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 15"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 16"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 17"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 18"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 19"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 20"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-                <CheckBox
-                    Content="Unknown 21"
-                    Margin="2"
-                    Checked="CheckBox_Changed"
-                    Unchecked="CheckBox_Changed"
-                />
-            </StackPanel>
-        </Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <Grid Margin="4">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Column 0: Primary Combat & Cheats -->
+                <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                    <TextBlock Text="Combat Cheats &amp; Control" FontWeight="Bold" Margin="2,2,2,4" Foreground="{DynamicResource GrayBrush1}" />
+
+                    <CheckBox
+                        Name="CheckBattlePause"
+                        Content="True Battle Pause [pause]"
+                        FontWeight="SemiBold"
+                        Margin="2"
+                        Checked="CheckBattlePause_Changed"
+                        Unchecked="CheckBattlePause_Changed"
+                    />
+                    <CheckBox Name="CheckPartyInvincible" Content="Allies invincible [mtkply]" Tag="PartyInvincible" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckEnemyInvincible" Content="Enemies invincible [mtkmon]" Tag="EnemyInvincible" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckEnemyControl" Content="Control enemies [teki]" Tag="EnemyControl" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckUnlimitedMp" Content="Unlimited MP / 0 MP cost [mp0]" Tag="UnlimitedMp" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckOverdriveAlways" Content="Overdrive always available [limit]" Tag="OverdriveAlways" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckNeverChargeOverdrive" Content="Never charge overdrive [limitoff]" Tag="NeverChargeOverdrive" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckAlwaysCritical" Content="Always critical hit [criton]" Tag="AlwaysCritical" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableCriticalHit" Content="Disable critical hit [crit]" Tag="DisableCriticalHit" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckAlwaysHit" Content="Always hit (100% accuracy) [abs]" Tag="AlwaysHit" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckNegateAbility" Content="Always miss / Negate ability [miss]" Tag="NegateAbility" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableRandomDamage" Content="Disable random damage [rnd]" Tag="DisableRandomDamage" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckAlwaysDeal1" Content="Everything hits for 1" Tag="AlwaysDeal1" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckAlwaysDeal10000" Content="Everything hits for 10000" Tag="AlwaysDeal10000" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckAlwaysDeal99999" Content="Everything hits for 99999" Tag="AlwaysDeal99999" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckPlayerAlways1Hp" Content="Allies always 1 HP [plyhp1]" Tag="PlayerAlways1Hp" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckEnemyAlways1Hp" Content="Enemies always 1 HP [monhp1]" Tag="EnemyAlways1Hp" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckAlwaysRareDrop" Content="Always rare drop and steal" Tag="AlwaysRareDrop" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckBattleAPx100" Content="Battle AP x100" Tag="BattleAPx100" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckBattleGilx100" Content="Battle gil x100" Tag="BattleGilx100" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableOverkill" Content="Disable overkill [overkill]" Tag="DisableOverkill" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckSensorEnabled" Content="Sensor always enabled [slow]" Tag="SensorEnabled" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableStatusInfliction" Content="Disable status infliction [stat]" Tag="DisableStatusInfliction" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+
+                    <DockPanel Margin="2,8,2,2">
+                        <TextBlock Text="Ambush State" VerticalAlignment="Center" Margin="0,0,6,0" />
+                        <ComboBox Name="ComboAmbushState" SelectionChanged="ComboAmbushState_SelectionChanged" HorizontalAlignment="Stretch">
+                            <ComboBoxItem Content="Default / Random (0xFF)" />
+                            <ComboBoxItem Content="Normal Encounter (0x00)" />
+                            <ComboBoxItem Content="Preemptive Strike (0x01)" />
+                            <ComboBoxItem Content="Ambushed! (0x02)" />
+                        </ComboBox>
+                    </DockPanel>
+                </StackPanel>
+
+                <!-- Column 1: Engine, Visuals & Camera -->
+                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                    <TextBlock Text="Engine, Visuals &amp; Camera" FontWeight="Bold" Margin="2,2,2,4" Foreground="{DynamicResource GrayBrush1}" />
+
+                    <CheckBox Name="CheckFreezeCTB" Content="Freeze CTB progression [sp0]" Tag="FreezeCTB" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckGamepadCamera" Content="Gamepad camera control [camera]" Tag="GamepadCamera" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableCameraCuts" Content="Disable battle camera cuts" Tag="DisableCameraCuts" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableAttackAnimation" Content="Disable attack animations [mag0]" Tag="DisableAttackAnimation" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableBattleMagicEffects" Content="Disable battle magic effects [btmag0]" Tag="DisableBattleMagicEffects" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableEventMagicEffects" Content="Disable event magic effects [evmag0]" Tag="DisableEventMagicEffects" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckSkipSummonAnimation" Content="Skip Aeon summon animation [summon]" Tag="SkipSummonAnimation" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckFullBattleInitUnlock" Content="Full battle init unlock [full]" Tag="FullBattleInitUnlock" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckInvertWillDieCheck" Content="Invert Will-Die check [willdie]" Tag="InvertWillDieCheck" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDebugConsolePrint" Content="Enable debug console print [print]" Tag="DebugConsolePrint" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckCameraTargetLook" Content="Camera target look mode [look]" Tag="CameraTargetLook" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckTestParticleEffects" Content="Test particle effects [testeff]" Tag="TestParticleEffects" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckThrowEjectDebug" Content="Throw / Eject debug [throw]" Tag="ThrowEjectDebug" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckMapDebugFlag" Content="Battle map debug [map]" Tag="MapDebugFlag" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisplayBattlefieldGrid" Content="Display battlefield grid [slowmag]" Tag="DisplayBattlefieldGrid" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckUnlockAllDevWeaponsInit" Content="Load dev weapons on init [wep]" Tag="UnlockAllDevWeaponsInit" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckScriptItemTestFlag" Content="Script item test [item]" Tag="ScriptItemTestFlag" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckBattleBehaviour" Content="Battle behaviour skip [skip]" Tag="BattleBehaviour" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckPostBattleCampDebug" Content="Post-battle camp debug [camp]" Tag="PostBattleCampDebug" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckLocalEntityCamera" Content="Local entity camera [localcam]" Tag="LocalEntityCamera" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckDisableNeckTracking" Content="Disable neck tracking [neckoff]" Tag="DisableNeckTracking" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                    <CheckBox Name="CheckCameraFocusDebug" Content="Camera focus debug [focus]" Tag="CameraFocusDebug" Margin="2" Checked="CheckBox_Changed" Unchecked="CheckBox_Changed" />
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
     </GroupBox>
 </UserControl>

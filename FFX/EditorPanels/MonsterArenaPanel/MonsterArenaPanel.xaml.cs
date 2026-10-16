@@ -8,93 +8,147 @@ using Farplane.FFX.Values;
 
 namespace Farplane.FFX.EditorPanels.MonsterArenaPanel;
 
-/// <summary>
-/// Interaction logic for MonsterArenaPanel.xaml
-/// </summary>
 public partial class MonsterArenaPanel : UserControl
 {
+    bool _refreshing;
+
     public MonsterArenaPanel()
     {
         this.InitializeComponent();
 
-        // Initialize area list
         foreach (var area in MonsterArenaData.MonsterArenaAreas)
         {
             this.ListMonsterArenaAreas.Items.Add(new TreeViewItem { Header = area.Name });
         }
-
-        (this.ListMonsterArenaAreas.Items[0] as TreeViewItem).IsSelected = true;
+        if (this.ListMonsterArenaAreas.Items.Count > 0)
+        {
+            ((TreeViewItem)this.ListMonsterArenaAreas.Items[0]).IsSelected = true;
+        }
     }
 
     public void Refresh()
     {
+        if (this.ListMonsterArenaAreas.SelectedItem == null)
+        {
+            return;
+        }
+
+        this._refreshing = true;
         this.GridMonsterArenaMonsters.Children.Clear();
-
         var arenaBytes = MonsterArena.GetCaptureCounts();
-
         var selectedArea = this.ListMonsterArenaAreas.Items.IndexOf(
             this.ListMonsterArenaAreas.SelectedItem
         );
-        var monsters = MonsterArenaData.MonsterArenaAreas[selectedArea].Monsters;
+
+        if (selectedArea < 0 || selectedArea >= MonsterArenaData.MonsterArenaAreas.Length)
+        {
+            this._refreshing = false;
+            return;
+        }
+
+        var areaData = MonsterArenaData.MonsterArenaAreas[selectedArea];
+        var monsters = areaData.Monsters;
+        var isCreationArea = selectedArea >= 13; // Area Conquest (13), Species Conquest (14), Original (15)
 
         for (var i = 0; i < monsters.Length; i++)
         {
-            var index = monsters[i].Index;
-            var count = arenaBytes[index];
-
+            var monster = monsters[i];
+            var monsterIndex = monster.Index;
             var column = i > 6 ? 1 : 0;
             var row = i > 6 ? i - 7 : i;
 
-            var monsterName = new TextBlock()
+            if (isCreationArea)
             {
-                Text = monsters[i].Name,
-                VerticalAlignment = VerticalAlignment.Center,
-            };
-            var monsterCount = new TextBox()
-            {
-                Text = count.ToString(),
-                Width = 40,
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Bottom,
-            };
-            var monsterPanel = new DockPanel
-            {
-                Children = { monsterName, monsterCount },
-                Margin = new Thickness(5),
-            };
-
-            monsterCount.KeyDown += (sender, args) =>
-            {
-                if (args.Key != Key.Enter)
+                // Creation Area: render CheckBox for unlock state (0 = locked, >0 = unlocked)
+                var isUnlocked = monsterIndex < arenaBytes.Length && arenaBytes[monsterIndex] != 0;
+                var checkBox = new CheckBox
                 {
-                    return;
-                }
+                    Content = monster.Name,
+                    IsChecked = isUnlocked,
+                    Tag = monsterIndex,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(4, 2, 4, 2)
+                };
 
-                try
+                checkBox.Checked += this.CreationCheckBox_Changed;
+                checkBox.Unchecked += this.CreationCheckBox_Changed;
+
+                Grid.SetColumn(checkBox, column);
+                Grid.SetRow(checkBox, row);
+                this.GridMonsterArenaMonsters.Children.Add(checkBox);
+            }
+            else
+            {
+                // Regular Area: render Label + TextBox for capture count (0..10)
+                var count = monsterIndex < arenaBytes.Length ? arenaBytes[monsterIndex] : (byte)0;
+
+                var monsterName = new TextBlock
                 {
-                    var textBox = sender as TextBox;
-                    var panelIndex = this.GridMonsterArenaMonsters.Children.IndexOf(
-                        (DockPanel)textBox.Parent
-                    );
-                    var monsterIndex = monsters[panelIndex].Index;
-                    this.WriteMonster(monsterIndex, byte.Parse(monsterCount.Text));
-                    this.Refresh();
-                    textBox.SelectAll();
-                }
-                catch (Exception)
+                    Text = monster.Name,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    ToolTip = monster.Name
+                };
+
+                var monsterCount = new TextBox
                 {
-                    Error.Show("Please enter a value between 0 and 255");
-                }
-            };
+                    Text = count.ToString(),
+                    Width = 40,
+                    HorizontalAlignment = HorizontalAlignment.Right,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Tag = monsterIndex
+                };
 
-            Grid.SetColumn(monsterPanel, column);
-            Grid.SetRow(monsterPanel, row);
+                monsterCount.KeyDown += (sender, args) =>
+                {
+                    if (args.Key != Key.Enter)
+                    {
+                        return;
+                    }
 
-            this.GridMonsterArenaMonsters.Children.Add(monsterPanel);
+                    try
+                    {
+                        var textBox = (TextBox)sender;
+                        var idx = (int)textBox.Tag;
+                        var newCount = byte.Parse(textBox.Text);
+                        MonsterArena.SetCaptureCount(idx, newCount);
+                        this.Refresh();
+                        textBox.SelectAll();
+                    }
+                    catch
+                    {
+                        Error.Show("Please enter a value between 0 and 255.");
+                    }
+                };
+
+                var monsterPanel = new DockPanel
+                {
+                    Children = { monsterName, monsterCount },
+                    Margin = new Thickness(4, 2, 4, 2)
+                };
+
+                Grid.SetColumn(monsterPanel, column);
+                Grid.SetRow(monsterPanel, row);
+                this.GridMonsterArenaMonsters.Children.Add(monsterPanel);
+            }
         }
+
+        this._refreshing = false;
     }
 
-    void WriteMonster(int index, byte count) => MonsterArena.SetCaptureCount(index, count);
+    void CreationCheckBox_Changed(object sender, RoutedEventArgs e)
+    {
+        if (this._refreshing)
+        {
+            return;
+        }
+
+        if (sender is CheckBox checkBox && checkBox.Tag is int index)
+        {
+            var isUnlocked = checkBox.IsChecked == true;
+            MonsterArena.SetCreationUnlocked(index, isUnlocked);
+        }
+    }
 
     void ListMonsterArenaAreas_OnSelectedItemChanged(
         object sender,
@@ -104,40 +158,37 @@ public partial class MonsterArenaPanel : UserControl
         var index = this.ListMonsterArenaAreas.Items.IndexOf(
             this.ListMonsterArenaAreas.SelectedItem
         );
-        var areaName = MonsterArenaData.MonsterArenaAreas[index].Name;
-        this.GroupMonsters.Header = areaName;
-        this.Refresh();
+
+        if (index >= 0 && index < MonsterArenaData.MonsterArenaAreas.Length)
+        {
+            this.GroupMonsters.Header = MonsterArenaData.MonsterArenaAreas[index].Name;
+            this.Refresh();
+        }
     }
 
     void ButtonCaptureAll_Click(object sender, RoutedEventArgs e)
     {
-        for (var i = 0; i < MonsterArenaData.MonsterArenaAreas.Length; i++)
-        {
-            for (var j = 0; j < MonsterArenaData.MonsterArenaAreas[i].Monsters.Length; j++)
-            {
-                MonsterArena.SetCaptureCount(
-                    MonsterArenaData.MonsterArenaAreas[i].Monsters[j].Index,
-                    i > 12 ? (byte)1 : (byte)10
-                );
-            }
-        }
-
+        MonsterArena.CaptureAllMonsters(10);
+        MonsterArena.UnlockAllCreations();
         this.Refresh();
     }
 
     void ButtonReleaseAll_Click(object sender, RoutedEventArgs e)
     {
-        for (var i = 0; i < MonsterArenaData.MonsterArenaAreas.Length; i++)
-        {
-            for (var j = 0; j < MonsterArenaData.MonsterArenaAreas[i].Monsters.Length; j++)
-            {
-                MonsterArena.SetCaptureCount(
-                    MonsterArenaData.MonsterArenaAreas[i].Monsters[j].Index,
-                    0
-                );
-            }
-        }
+        MonsterArena.ReleaseAllMonsters();
+        MonsterArena.LockAllCreations();
+        this.Refresh();
+    }
 
+    void ButtonUnlockAllCreations_Click(object sender, RoutedEventArgs e)
+    {
+        MonsterArena.UnlockAllCreations();
+        this.Refresh();
+    }
+
+    void ButtonLockAllCreations_Click(object sender, RoutedEventArgs e)
+    {
+        MonsterArena.LockAllCreations();
         this.Refresh();
     }
 }

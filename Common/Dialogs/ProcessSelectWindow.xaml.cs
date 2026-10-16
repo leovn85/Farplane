@@ -36,7 +36,7 @@ public partial class ProcessSelectWindow : MetroWindow
     {
         this._ready = false;
 
-        // Giải phóng các Process cũ trước khi làm mới danh sách
+        // Release old processes before refreshing the list
         foreach (var item in this.ProcessList.Items.OfType<ProcessListItem>())
         {
             if (item.Process != this._selectedProcess)
