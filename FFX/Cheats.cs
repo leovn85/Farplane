@@ -50,6 +50,7 @@ static class Cheats
                 (byte)overdriveLevel
             );
         }
+        Party.RecalculateStats();
     }
 
     public static void MaxSphereLevels()

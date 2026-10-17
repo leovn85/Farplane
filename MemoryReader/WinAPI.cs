@@ -45,7 +45,7 @@ class WinAPI
     [DllImport("kernel32.dll", SetLastError = true)]
     public static extern uint WaitForSingleObject(IntPtr hHandle, uint dwMilliseconds);
 }
-}
+
 
 [Flags]
 public enum ProcessAccessFlags : uint

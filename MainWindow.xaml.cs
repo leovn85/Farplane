@@ -200,6 +200,12 @@ public partial class MainWindow : MetroWindow
         }
     }
 
+    void ButtonPatcher_Click(object sender, RoutedEventArgs e)
+    {
+        var patcherWindow = new Common.Dialogs.GamePatcherWindow { Owner = this };
+        patcherWindow.ShowDialog();
+    }
+
     void ButtonConfig_Click(object sender, RoutedEventArgs e) =>
         this._configFlyout.IsOpen = !this._configFlyout.IsOpen;
 

@@ -143,6 +143,15 @@ public static partial class GameMemory
         if (!FFX_Hashes.Contains(stringHash))
         {
             Console.WriteLine("Hash: " + stringHash);
+
+            // Check correct size of the version of patched FFX/FFX-2  (Farplane Fix / Undub / 4GB)
+            var moduleSize = MemorySharp?.Native?.MainModule?.ModuleMemorySize ?? 0;
+            if (moduleSize > 0xA00000)
+            {
+                // Allow auto attach
+                return true;
+            }
+
             var proceed = MessageBox.Show(
                 "The selected process does not appear to match any known compatible processes.\n\n"
                     + "Farplane will attempt to calculate offsets automatically, but proceeding "
